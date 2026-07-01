@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/admin/providers/borrow_request_provider.dart';
@@ -13,6 +14,7 @@ class RequestScreen extends StatefulWidget {
 
 class _RequestScreenState extends State<RequestScreen> {
   int _selectedTab = 0;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -20,6 +22,25 @@ class _RequestScreenState extends State<RequestScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BorrowRequestProvider>().loadRequests(status: 'pending');
     });
+
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) {
+        context.read<BorrowRequestProvider>().loadRequests(
+          status: _selectedTab == 0 ? 'pending' : null,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    final provider = context.read<BorrowRequestProvider>();
+    await provider.loadRequests(status: _selectedTab == 0 ? 'pending' : null);
   }
 
   Future<void> _approve(int id) async {
@@ -80,109 +101,118 @@ class _RequestScreenState extends State<RequestScreen> {
             Expanded(
               child: Consumer<BorrowRequestProvider>(
                 builder: (context, provider, _) {
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Borrow Requests',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1A2E),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Manage incoming loan requests from students and faculty.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[500],
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0F0F0),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              _TabButton(
-                                label: 'Pending (${provider.requests.length})',
-                                selected: _selectedTab == 0,
-                                onTap: () {
-                                  setState(() => _selectedTab = 0);
-                                  provider.loadRequests(status: 'pending');
-                                },
-                              ),
-                              _TabButton(
-                                label: 'All Records',
-                                selected: _selectedTab == 1,
-                                onTap: () {
-                                  setState(() => _selectedTab = 1);
-                                  provider.loadRequests();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        if (provider.isLoading)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 40),
-                              child: CircularProgressIndicator(),
+                  return RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Borrow Requests',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1A2E),
                             ),
-                          )
-                        else if (provider.error != null)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 40),
-                              child: Text(provider.error!),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Manage incoming loan requests from students and faculty.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              height: 1.4,
                             ),
-                          )
-                        else if (provider.requests.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 40),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    size: 56,
-                                    color: Colors.grey[300],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'No pending requests',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F0F0),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                _TabButton(
+                                  label: 'Pending (${provider.pendingCount})',
+                                  selected: _selectedTab == 0,
+                                  onTap: () {
+                                    setState(() => _selectedTab = 0);
+                                    provider.loadRequests(status: 'pending');
+                                  },
+                                ),
+                                _TabButton(
+                                  label: 'All Records',
+                                  selected: _selectedTab == 1,
+                                  onTap: () {
+                                    setState(() => _selectedTab = 1);
+                                    provider.loadRequests();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // only show spinner on first load
+                          if (provider.isLoading && provider.requests.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 40),
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          else if (provider.error != null &&
+                              provider.requests.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Text(provider.error!),
+                              ),
+                            )
+                          else if (provider.requests.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline,
+                                      size: 56,
+                                      color: Colors.grey[300],
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      _selectedTab == 0
+                                          ? 'No pending requests'
+                                          : 'No records found',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[400],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: provider.requests.length,
+                              itemBuilder: (_, index) {
+                                final req = provider.requests[index];
+                                return RequestCard(
+                                  requestModel: req,
+                                  onApprove: () => _approve(req.id),
+                                  onReject: () => _reject(req.id),
+                                );
+                              },
                             ),
-                          )
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: provider.requests.length,
-                            itemBuilder: (_, index) {
-                              final req = provider.requests[index];
-                              return RequestCard(
-                                requestModel: req,
-                                onApprove: () => _approve(req.id),
-                                onReject: () => _reject(req.id),
-                              );
-                            },
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

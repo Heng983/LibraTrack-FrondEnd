@@ -17,9 +17,10 @@ class RequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPriority = requestModel.priority == RequestPriority.priority;
+    final isPending = requestModel.status == 'pending';
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.white,
@@ -27,7 +28,7 @@ class RequestCard extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -36,7 +37,7 @@ class RequestCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
               topRight: Radius.circular(16),
             ),
@@ -47,15 +48,15 @@ class RequestCard extends StatelessWidget {
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 height: 160,
-                color: Color(0xFFEAEDF5),
-                child: Center(
+                color: const Color(0xFFEAEDF5),
+                child: const Center(
                   child: Icon(Icons.book_rounded, color: Colors.grey, size: 48),
                 ),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(14),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -65,7 +66,7 @@ class RequestCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         requestModel.bookTitle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A2E),
@@ -74,14 +75,14 @@ class RequestCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: isPriority
-                            ? Color(0xFFE8F8F0)
-                            : Color(0xFFF0F0F0),
+                            ? const Color(0xFFE8F8F0)
+                            : const Color(0xFFF0F0F0),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -100,7 +101,7 @@ class RequestCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   'Requested by : ${requestModel.studentName}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.navy,
@@ -133,58 +134,106 @@ class RequestCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: onApprove,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.navy,
-                          foregroundColor: Colors.white,
-                          minimumSize: Size.fromHeight(44),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                if (isPending)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onApprove,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.navy,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(44),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Approve',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: onReject,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppColors.red, width: 1.5),
-                          foregroundColor: AppColors.red,
-                          minimumSize: Size.fromHeight(44),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Reject',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                          child: const Text(
+                            'Approve',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: onReject,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: AppColors.red,
+                              width: 1.5,
+                            ),
+                            foregroundColor: AppColors.red,
+                            minimumSize: const Size.fromHeight(44),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Reject',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _statusBgColor(requestModel.status),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ],
-                ),
+                    child: Text(
+                      requestModel.status.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _statusTextColor(requestModel.status),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Color _statusBgColor(String status) {
+    switch (status) {
+      case 'approved':
+        return const Color(0xFFE8F8F0);
+      case 'rejected':
+        return const Color(0xFFFFEEEE);
+      case 'returned':
+        return const Color(0xFFEEF0FF);
+      default:
+        return const Color(0xFFF0F0F0);
+    }
+  }
+
+  Color _statusTextColor(String status) {
+    switch (status) {
+      case 'approved':
+        return AppColors.green;
+      case 'rejected':
+        return AppColors.red;
+      case 'returned':
+        return const Color(0xFF5B5FC7);
+      default:
+        return Colors.grey;
+    }
   }
 }

@@ -71,7 +71,9 @@ class ApiService {
     final headers = await _authHeaders();
     print('Token: ${await getToken()}');
     print('URL: $url');
-    final response = await http.get(Uri.parse(url), headers: headers);
+    final response = await http
+        .get(Uri.parse(url), headers: headers)
+        .timeout(const Duration(seconds: 10));
     print('Status: ${response.statusCode}');
     print('Body: ${response.body}');
     return jsonDecode(response.body);

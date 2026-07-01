@@ -30,11 +30,13 @@ class DashboardModel {
 enum ActivityType { request, returned, system }
 
 class ActivityModel {
+  final int id;
   final String message;
   final String timeAgo;
   final ActivityType type;
 
   ActivityModel({
+    required this.id,
     required this.message,
     required this.timeAgo,
     required this.type,
@@ -42,6 +44,7 @@ class ActivityModel {
 
   factory ActivityModel.fromJson(Map<String, dynamic> json) {
     return ActivityModel(
+      id: json['id'] ?? 0,
       message: json['message'] ?? '',
       timeAgo: json['time_ago'] ?? '',
       type: _typeFromStatus(json['status']),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/features/admin/models/dashboard_model.dart';
+import 'package:libratrack_application/features/admin/providers/borrow_request_provider.dart';
+import 'package:libratrack_application/features/admin/providers/dashboard_provider.dart';
+import 'package:provider/provider.dart';
 
 class RecentActivity extends StatelessWidget {
   final List<ActivityModel> activities;
@@ -9,7 +12,7 @@ class RecentActivity extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.white,
@@ -17,7 +20,7 @@ class RecentActivity extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -27,7 +30,7 @@ class RecentActivity extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Recent Activity',
                 style: TextStyle(
                   fontSize: 15,
@@ -37,7 +40,7 @@ class RecentActivity extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {},
-                child: Text(
+                child: const Text(
                   'VIEW ALL',
                   style: TextStyle(
                     fontSize: 11,
@@ -50,27 +53,72 @@ class RecentActivity extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: activities.length,
-            itemBuilder: (_, index) {
-              final item = activities[index];
-              final isLast = index == activities.length - 1;
+          if (activities.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  'No recent activity',
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: activities.length,
+              itemBuilder: (_, index) {
+                final item = activities[index];
+                final isLast = index == activities.length - 1;
 
-              return Column(
-                children: [
-                  _ActivityRow(
-                    activity: item,
-                    onApprove: () {},
-                    onReject: () {},
-                  ),
-                  if (!isLast)
-                    const Divider(height: 1, color: Color(0xFFF0F2F8)),
-                ],
-              );
-            },
-          ),
+                return Column(
+                  children: [
+                    _ActivityRow(
+                      activity: item,
+                      onApprove: item.type == ActivityType.request
+                          ? () async {
+                              final ok = await context
+                                  .read<BorrowRequestProvider>()
+                                  .approve(item.id);
+                              if (ok && context.mounted) {
+                                context
+                                    .read<DashboardProvider>()
+                                    .loadDashboard();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Request approved!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          : null,
+                      onReject: item.type == ActivityType.request
+                          ? () async {
+                              final ok = await context
+                                  .read<BorrowRequestProvider>()
+                                  .reject(item.id);
+                              if (ok && context.mounted) {
+                                context
+                                    .read<DashboardProvider>()
+                                    .loadDashboard();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Request rejected.'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          : null,
+                    ),
+                    if (!isLast)
+                      const Divider(height: 1, color: Color(0xFFF0F2F8)),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );
@@ -139,8 +187,8 @@ class _ActivityRow extends StatelessWidget {
               child: Container(
                 width: 30,
                 height: 30,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F8F0),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F8F0),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -156,8 +204,8 @@ class _ActivityRow extends StatelessWidget {
               child: Container(
                 width: 30,
                 height: 30,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEEEE),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEEEE),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

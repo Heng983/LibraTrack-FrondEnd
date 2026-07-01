@@ -5,6 +5,7 @@ import 'package:libratrack_application/features/admin/models/borrow_request_mode
 
 class BorrowRequestProvider extends ChangeNotifier {
   List<BorrowRequestModel> requests = [];
+  int pendingCount = 0;
   bool isLoading = false;
   String? error;
 
@@ -21,9 +22,13 @@ class BorrowRequestProvider extends ChangeNotifier {
       final res = await ApiService.getAuth(url);
       final list = res['borrows'] as List<dynamic>? ?? [];
       requests = list.map((e) => BorrowRequestModel.fromJson(e)).toList();
+      if (status == 'pending') {
+        pendingCount = requests.length;
+      }
     } catch (e) {
       error = e.toString();
     }
+
     isLoading = false;
     notifyListeners();
   }
@@ -37,6 +42,7 @@ class BorrowRequestProvider extends ChangeNotifier {
       );
       if (res.containsKey('borrow')) {
         requests.removeWhere((r) => r.id == id);
+        if (pendingCount > 0) pendingCount--;
         notifyListeners();
         return true;
       }
@@ -59,6 +65,7 @@ class BorrowRequestProvider extends ChangeNotifier {
       );
       if (res.containsKey('borrow')) {
         requests.removeWhere((r) => r.id == id);
+        if (pendingCount > 0) pendingCount--;
         notifyListeners();
         return true;
       }

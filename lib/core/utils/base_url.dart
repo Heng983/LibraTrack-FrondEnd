@@ -10,7 +10,7 @@ class Baseurl {
     // Mobile / Desktop
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return 'http://10.0.2.2:8000/api'; // Android Emulator
+        return 'http://192.168.123.171:8000/api'; // Android Emulator
       case TargetPlatform.iOS:
         return 'http://127.0.0.1:8000/api'; // iOS Simulator
       case TargetPlatform.macOS:

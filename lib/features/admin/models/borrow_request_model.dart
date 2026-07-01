@@ -8,6 +8,7 @@ class BorrowRequestModel {
   final String bookCover;
   final String requestDate;
   final RequestPriority priority;
+  final String status;
 
   BorrowRequestModel({
     required this.id,
@@ -17,6 +18,7 @@ class BorrowRequestModel {
     required this.bookCover,
     required this.requestDate,
     required this.priority,
+    required this.status,
   });
 
   factory BorrowRequestModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class BorrowRequestModel {
       bookCover: book?['cover_image'] ?? book?['image'] ?? '',
       requestDate: _formatDate(json['created_at']),
       priority: RequestPriority.standard,
+      status: json['status'] ?? 'pending',
     );
   }
 
