@@ -31,7 +31,7 @@ class _HistoryScreenState extends State<HistoryScreen>
       context.read<BorrowCartProvider>().fetchMyBorrows();
     });
 
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
       if (mounted) context.read<BorrowCartProvider>().fetchMyBorrows();
     });
   }
@@ -122,28 +122,25 @@ class _ActiveTab extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: Text(
-              'Currently Borrowed (${items.length})',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.navy,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: items.length + 1, // +1 for header
+        itemBuilder: (_, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Text(
+                'Currently Borrowed (${items.length})',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.navy,
+                ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: items.length,
-              itemBuilder: (_, index) => ActiveBookCard(item: items[index]),
-            ),
-          ),
-        ],
+            );
+          }
+          return ActiveBookCard(item: items[index - 1]);
+        },
       ),
     );
   }
@@ -174,28 +171,25 @@ class _HistoryTab extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: Text(
-              'Recently Returned (${items.length})',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.navy,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: items.length + 1,
+        itemBuilder: (_, index) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Text(
+                'Recently Returned (${items.length})',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.navy,
+                ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: items.length,
-              itemBuilder: (_, index) => HistoryBookCard(item: items[index]),
-            ),
-          ),
-        ],
+            );
+          }
+          return HistoryBookCard(item: items[index - 1]);
+        },
       ),
     );
   }
@@ -226,47 +220,42 @@ class _PendingTab extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: Text(
-              'Awaiting Approval',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.navy,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: items.length + 1,
+        itemBuilder: (_, index) {
+          if (index == 0) {
+            return const Padding(
+              padding: EdgeInsets.fromLTRB(0, 16, 0, 12),
+              child: Text(
+                'Awaiting Approval',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.navy,
+                ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: items.length,
-              itemBuilder: (_, index) {
-                final item = items[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: PendingBookCard(
-                    item: item,
-                    onCancel: () async {
-                      final success = await context
-                          .read<BorrowCartProvider>()
-                          .cancelRequest(item.id);
-                      if (success && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Request cancelled')),
-                        );
-                      }
-                    },
-                  ),
-                );
+            );
+          }
+          final item = items[index - 1];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: PendingBookCard(
+              item: item,
+              onCancel: () async {
+                final success = await context
+                    .read<BorrowCartProvider>()
+                    .cancelRequest(item.id);
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Request cancelled')),
+                  );
+                }
               },
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
