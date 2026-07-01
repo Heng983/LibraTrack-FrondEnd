@@ -1,3 +1,5 @@
+import 'package:libratrack_application/core/constants/api_constants.dart';
+
 class BookModel {
   const BookModel({
     required this.id,
@@ -36,7 +38,9 @@ class BookModel {
       id: json['id'] as int,
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',
-      cover: json['cover'] ?? json['cover'] ?? json['image'] ?? '',
+      cover: ApiConstants.proxyCover(
+        json['cover'] as String? ?? json['image'] as String? ?? '',
+      ),
       available: json['available'] as bool? ?? false,
       copiesLeft: json['copies_left'] as int? ?? 0,
       category: json['category'] as String? ?? 'General',

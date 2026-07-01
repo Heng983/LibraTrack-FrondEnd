@@ -1,3 +1,5 @@
+import 'package:libratrack_application/core/constants/api_constants.dart';
+
 enum RequestPriority { priority, standard }
 
 class BorrowRequestModel {
@@ -30,7 +32,7 @@ class BorrowRequestModel {
       studentId: json['student_id'] ?? 0,
       studentName: student?['name'] ?? 'Unknown',
       bookTitle: book?['title'] ?? 'Unknown',
-      bookCover: book?['cover_image'] ?? book?['image'] ?? '',
+      bookCover: ApiConstants.proxyCover(book?['cover'] as String?), // ← fixed
       requestDate: _formatDate(json['created_at']),
       priority: RequestPriority.standard,
       status: json['status'] ?? 'pending',

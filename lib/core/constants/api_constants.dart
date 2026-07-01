@@ -18,7 +18,7 @@ class ApiConstants {
   static String books = '$baseUrl/books';
   static String bookDetail(int id) => '$baseUrl/books/$id';
 
-  //borrows
+  // borrows
   static String borrows = '$baseUrl/borrows';
   static String myBorrows = '$baseUrl/borrows/my';
   static String borrowApprove(int id) => '$baseUrl/borrows/$id/approve';
@@ -26,10 +26,17 @@ class ApiConstants {
   static String borrowReturned(int id) => '$baseUrl/borrows/$id/returned';
   static String borrowCancel(int id) => '$baseUrl/borrows/$id';
 
-  //image
+  // image
   static String profileImage = '$baseUrl/auth/profile-image';
 
-  //dashboard
+  // dashboard
   static String dashboard = '$baseUrl/dashboard';
   static String dashboardActivity = '$baseUrl/dashboard/activity';
+
+  // book cover proxy
+  static String proxyCover(String? url) {
+    if (url == null || url.isEmpty) return '';
+    final encoded = Uri.encodeComponent(url);
+    return '$baseUrl/book-cover?url=$encoded';
+  }
 }
