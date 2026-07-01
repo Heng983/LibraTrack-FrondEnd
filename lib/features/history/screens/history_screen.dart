@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
@@ -19,20 +20,31 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BorrowCartProvider>().fetchMyBorrows();
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) context.read<BorrowCartProvider>().fetchMyBorrows();
     });
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await context.read<BorrowCartProvider>().fetchMyBorrows();
   }
 
   @override
@@ -44,11 +56,8 @@ class _HistoryScreenState extends State<HistoryScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // ── App Bar ──
             const HistoryAppBar(),
             const Divider(height: 1, color: Color(0xFFEEEEEE)),
-
-            // ── Tab Bar ──
             Container(
               color: AppColors.bgcolor,
               child: TabBar(
@@ -69,17 +78,15 @@ class _HistoryScreenState extends State<HistoryScreen>
                 ],
               ),
             ),
-
-            // ── Tab Views ──
             Expanded(
-              child: borrow.isLoading
+              child: borrow.isLoading && borrow.myBorrows.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        _ActiveTab(items: borrow.active),
-                        _HistoryTab(items: borrow.history),
-                        _PendingTab(items: borrow.pending),
+                        _ActiveTab(items: borrow.active, onRefresh: _refresh),
+                        _HistoryTab(items: borrow.history, onRefresh: _refresh),
+                        _PendingTab(items: borrow.pending, onRefresh: _refresh),
                       ],
                     ),
             ),
@@ -90,132 +97,177 @@ class _HistoryScreenState extends State<HistoryScreen>
   }
 }
 
-// ── Active Tab ──
 class _ActiveTab extends StatelessWidget {
   final List<BorrowRecordModel> items;
+  final Future<void> Function() onRefresh;
 
-  const _ActiveTab({required this.items});
+  const _ActiveTab({required this.items, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return EmptyState(message: 'No active borrows');
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: EmptyState(message: 'No active borrows'),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-          child: Text(
-            'Currently Borrowed (${items.length})',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.navy,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Text(
+              'Currently Borrowed (${items.length})',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.navy,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (_, index) => ActiveBookCard(item: items[index]),
+          Expanded(
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (_, index) => ActiveBookCard(item: items[index]),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-// ── History Tab ──
 class _HistoryTab extends StatelessWidget {
   final List<BorrowRecordModel> items;
+  final Future<void> Function() onRefresh;
 
-  const _HistoryTab({required this.items});
+  const _HistoryTab({required this.items, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return EmptyState(message: 'No returned books yet');
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: EmptyState(message: 'No returned books yet'),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-          child: Text(
-            'Recently Returned (${items.length})',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.navy,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Text(
+              'Recently Returned (${items.length})',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.navy,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (_, index) => HistoryBookCard(item: items[index]),
+          Expanded(
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (_, index) => HistoryBookCard(item: items[index]),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-// ── Pending Tab ──
 class _PendingTab extends StatelessWidget {
   final List<BorrowRecordModel> items;
+  final Future<void> Function() onRefresh;
 
-  const _PendingTab({required this.items});
+  const _PendingTab({required this.items, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return EmptyState(message: 'No pending requests');
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: EmptyState(message: 'No pending requests'),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-          child: Text(
-            'Awaiting Approval',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.navy,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Text(
+              'Awaiting Approval',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.navy,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: items.length,
-            itemBuilder: (_, index) {
-              final item = items[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: PendingBookCard(
-                  item: item,
-                  onCancel: () async {
-                    final success = await context
-                        .read<BorrowCartProvider>()
-                        .cancelRequest(item.id);
-                    if (success && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Request cancelled')),
-                      );
-                    }
-                  },
-                ),
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: items.length,
+              itemBuilder: (_, index) {
+                final item = items[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: PendingBookCard(
+                    item: item,
+                    onCancel: () async {
+                      final success = await context
+                          .read<BorrowCartProvider>()
+                          .cancelRequest(item.id);
+                      if (success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Request cancelled')),
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -29,26 +29,34 @@ class BorrowRecordModel {
 
   factory BorrowRecordModel.fromJson(Map<String, dynamic> json) {
     return BorrowRecordModel(
-      id: json['id'] as int,
-      studentId: json['student_id'] as int,
-      bookId: json['book_id'] as int,
-      status: _parseStatus(json['status'] as String),
-      reason: json['reason'] as String?,
-      durationDays: json['duration_days'] as int? ?? 14,
+      id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
+      studentId: json['student_id'] is int
+          ? json['student_id']
+          : int.tryParse('${json['student_id']}') ?? 0,
+      bookId: json['book_id'] is int
+          ? json['book_id']
+          : int.tryParse('${json['book_id']}') ?? 0,
+      status: _parseStatus(json['status']?.toString()),
+      reason: json['reason']?.toString(),
+      durationDays: json['duration_days'] is int
+          ? json['duration_days']
+          : int.tryParse('${json['duration_days']}') ?? 14,
       borrowedAt: json['borrowed_at'] != null
-          ? DateTime.parse(json['borrowed_at'])
+          ? DateTime.tryParse(json['borrowed_at'].toString())
           : null,
       dueDate: json['due_date'] != null
-          ? DateTime.parse(json['due_date'])
+          ? DateTime.tryParse(json['due_date'].toString())
           : null,
       returnedAt: json['returned_at'] != null
-          ? DateTime.parse(json['returned_at'])
+          ? DateTime.tryParse(json['returned_at'].toString())
           : null,
-      book: json['book'] != null ? BookModel.fromJson(json['book']) : null,
+      book: json['book'] != null
+          ? BookModel.fromJson(json['book'] as Map<String, dynamic>)
+          : null,
     );
   }
 
-  static BorrowStatus _parseStatus(String status) {
+  static BorrowStatus _parseStatus(String? status) {
     switch (status) {
       case 'approved':
         return BorrowStatus.approved;

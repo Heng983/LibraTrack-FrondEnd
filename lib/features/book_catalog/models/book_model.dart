@@ -36,7 +36,7 @@ class BookModel {
       id: json['id'] as int,
       title: json['title'] as String? ?? '',
       author: json['author'] as String? ?? '',
-      cover: json['cover'] as String? ?? '',
+      cover: json['cover'] ?? json['cover'] ?? json['image'] ?? '',
       available: json['available'] as bool? ?? false,
       copiesLeft: json['copies_left'] as int? ?? 0,
       category: json['category'] as String? ?? 'General',

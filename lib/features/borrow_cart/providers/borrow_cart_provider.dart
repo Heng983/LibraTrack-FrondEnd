@@ -5,7 +5,6 @@ import 'package:libratrack_application/features/book_catalog/models/book_model.d
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
 
 class BorrowCartProvider extends ChangeNotifier {
-  // ── Local cart ──
   final List<BookModel> _items = [];
 
   List<BookModel> get items => _items;
@@ -31,7 +30,6 @@ class BorrowCartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── API calls ──
   List<BorrowRecordModel> _myBorrows = [];
   bool _isLoading = false;
   String? _error;
@@ -91,6 +89,7 @@ class BorrowCartProvider extends ChangeNotifier {
       if (status != null) url += '?status=$status';
 
       final res = await ApiService.getAuth(url);
+      print('RAW BORROWS: ${res['borrows']}');
       final dynamic data = res['borrows'];
       if (data is List) {
         _myBorrows = data
