@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_provider.dart';
+import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_notifier.dart';
 import 'package:libratrack_application/features/borrow_cart/screens/request_borrow_screen.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/cart_empty_state.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/cart_info_banner.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/cart_item.dart';
-import 'package:provider/provider.dart';
 
-class BorrowCartScreen extends StatelessWidget {
+class BorrowCartScreen extends ConsumerWidget {
   const BorrowCartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cart = context.watch<BorrowCartProvider>();
-    final isEmpty = cart.items.isEmpty;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(borrowCartProvider);
+    final isEmpty = cart.cartItems.isEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.bgcolor,
@@ -38,7 +38,7 @@ class BorrowCartScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(color: Colors.grey),
+            Divider(color: AppColors.divider),
             Expanded(
               child: isEmpty
                   ? CartEmptyState()
@@ -47,7 +47,7 @@ class BorrowCartScreen extends StatelessWidget {
                         horizontal: 20,
                         vertical: 16,
                       ),
-                      itemCount: cart.items.length + 1,
+                      itemCount: cart.cartItems.length + 1,
                       separatorBuilder: (_, index) => index == 0
                           ? const SizedBox(height: 16)
                           : const SizedBox(height: 12),
@@ -69,17 +69,19 @@ class BorrowCartScreen extends StatelessWidget {
                                 'Review the items you wish to borrow from the collection.',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey,
+                                  color: AppColors.textMuted,
                                   height: 1.4,
                                 ),
                               ),
                             ],
                           );
                         }
-                        final book = cart.items[index - 1];
+                        final book = cart.cartItems[index - 1];
                         return CartItem(
                           book: book,
-                          onRemove: () => cart.removeItem(index - 1),
+                          onRemove: () => ref
+                              .read(borrowCartProvider.notifier)
+                              .removeItem(index - 1),
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(

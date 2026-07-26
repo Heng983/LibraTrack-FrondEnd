@@ -25,7 +25,7 @@ class RatingBar extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           "$rating ($reviewCount Reviews)",
-          style: TextStyle(fontSize: 13, color: Colors.black),
+          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
         ),
       ],
     );

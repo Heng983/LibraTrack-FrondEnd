@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/student_loginscreen.dart';
 import 'package:libratrack_application/features/auth/widgets/department_dropdown.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
-import 'package:provider/provider.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullnameController = TextEditingController();
   final _studentIdController = TextEditingController();
@@ -36,14 +37,17 @@ class _SignupScreenState extends State<SignupScreen> {
   void _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.register(
-      name: _fullnameController.text.trim(),
-      studentId: _studentIdController.text.trim(),
-      email: _emailController.text.trim(),
-      department: _selectedDepartment,
-      password: _passwordController.text.trim(),
-    );
+    final success = await ref
+        .read(authProvider.notifier)
+        .register(
+          name: _fullnameController.text.trim(),
+          studentId: _studentIdController.text.trim(),
+          email: _emailController.text.trim(),
+          department: _selectedDepartment,
+          password: _passwordController.text.trim(),
+        );
+
+    if (!mounted) return;
 
     if (success) {
       Navigator.pushAndRemoveUntil(
@@ -52,8 +56,11 @@ class _SignupScreenState extends State<SignupScreen> {
         (route) => false,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Registration failed')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Registration failed',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -61,14 +68,13 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F8),
+      backgroundColor: AppColors.bgGray,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
               children: [
-                // ── Header ──
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -79,14 +85,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         color: AppColors.navy,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.menu_book_rounded,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         size: 28,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
+                    Text(
                       'LibraTrack',
                       style: TextStyle(
                         fontSize: 22,
@@ -98,7 +104,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Create Student Account',
                   style: TextStyle(
                     fontSize: 26,
@@ -110,14 +116,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 Text(
                   'Join your university library ecosystem and\nmanage your academic resources seamlessly.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[600], height: 1.5),
+                  style: TextStyle(color: AppColors.textMuted, height: 1.5),
                 ),
                 const SizedBox(height: 28),
 
-                // ── Form Card ──
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.borderColor),
                   ),
@@ -208,7 +213,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           'Password must be at least 8 characters long',
                           style: TextStyle(
                             fontSize: 11.5,
-                            color: Colors.grey[500],
+                            color: AppColors.textMuted,
                             height: 1.4,
                           ),
                         ),
@@ -242,7 +247,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             onPressed: _handleSignUp,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.navy,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -274,12 +279,12 @@ class _SignupScreenState extends State<SignupScreen> {
                               'Already have an account? ',
                               style: TextStyle(
                                 fontSize: 13.5,
-                                color: Colors.grey[700],
+                                color: AppColors.textMuted,
                               ),
                             ),
                             GestureDetector(
                               onTap: () => Navigator.pop(context),
-                              child: const Text(
+                              child: Text(
                                 'Sign In',
                                 style: TextStyle(
                                   fontSize: 13.5,
@@ -298,7 +303,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13.5,
-                            color: Colors.grey[700],
+                            color: AppColors.textMuted,
                             height: 1.4,
                           ),
                         ),

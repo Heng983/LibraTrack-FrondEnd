@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libratrack_application/core/theme/app_color.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
 import 'package:libratrack_application/features/admin/models/dashboard_model.dart';
-import 'package:libratrack_application/features/admin/providers/borrow_request_provider.dart';
-import 'package:libratrack_application/features/admin/providers/dashboard_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:libratrack_application/features/admin/providers/borrow_request_notifier.dart';
+import 'package:libratrack_application/features/admin/providers/dashboard_notifier.dart';
 
-class RecentActivity extends StatelessWidget {
+class RecentActivity extends ConsumerWidget {
   final List<ActivityModel> activities;
 
   const RecentActivity({super.key, required this.activities});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
+        color: AppColors.card,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -30,12 +32,12 @@ class RecentActivity extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Recent Activity',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E),
+                  color: AppColors.textPrimary,
                 ),
               ),
               GestureDetector(
@@ -54,12 +56,12 @@ class RecentActivity extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (activities.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Text(
                   'No recent activity',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                 ),
               ),
             )
@@ -78,43 +80,40 @@ class RecentActivity extends StatelessWidget {
                       activity: item,
                       onApprove: item.type == ActivityType.request
                           ? () async {
-                              final ok = await context
-                                  .read<BorrowRequestProvider>()
+                              final ok = await ref
+                                  .read(borrowRequestProvider.notifier)
                                   .approve(item.id);
                               if (ok && context.mounted) {
-                                context
-                                    .read<DashboardProvider>()
+                                ref
+                                    .read(dashboardProvider.notifier)
                                     .loadDashboard();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Request approved!'),
-                                    backgroundColor: Colors.green,
-                                  ),
+                                GlassSnackBar.show(
+                                  context,
+                                  'Request approved!',
+                                  type: GlassSnackBarType.success,
                                 );
                               }
                             }
                           : null,
                       onReject: item.type == ActivityType.request
                           ? () async {
-                              final ok = await context
-                                  .read<BorrowRequestProvider>()
+                              final ok = await ref
+                                  .read(borrowRequestProvider.notifier)
                                   .reject(item.id);
                               if (ok && context.mounted) {
-                                context
-                                    .read<DashboardProvider>()
+                                ref
+                                    .read(dashboardProvider.notifier)
                                     .loadDashboard();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Request rejected.'),
-                                    backgroundColor: Colors.red,
-                                  ),
+                                GlassSnackBar.show(
+                                  context,
+                                  'Request rejected.',
+                                  type: GlassSnackBarType.info,
                                 );
                               }
                             }
                           : null,
                     ),
-                    if (!isLast)
-                      const Divider(height: 1, color: Color(0xFFF0F2F8)),
+                    if (!isLast) Divider(height: 1, color: AppColors.divider),
                   ],
                 );
               },
@@ -131,7 +130,6 @@ class _ActivityRow extends StatelessWidget {
   final VoidCallback? onReject;
 
   const _ActivityRow({required this.activity, this.onApprove, this.onReject});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -154,9 +152,9 @@ class _ActivityRow extends StatelessWidget {
               children: [
                 Text(
                   activity.message,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
-                    color: Color(0xFF2A2A3A),
+                    color: AppColors.textPrimary,
                     height: 1.4,
                     fontWeight: FontWeight.w500,
                   ),
@@ -164,7 +162,7 @@ class _ActivityRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   activity.timeAgo,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -187,13 +185,13 @@ class _ActivityRow extends StatelessWidget {
               child: Container(
                 width: 30,
                 height: 30,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE8F8F0),
+                decoration: BoxDecoration(
+                  color: AppColors.green.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check_rounded,
-                  color: Colors.green,
+                  color: AppColors.green,
                   size: 16,
                 ),
               ),
@@ -204,51 +202,49 @@ class _ActivityRow extends StatelessWidget {
               child: Container(
                 width: 30,
                 height: 30,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFEEEE),
+                decoration: BoxDecoration(
+                  color: AppColors.red.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.close_rounded,
-                  color: Colors.red,
+                  color: AppColors.red,
                   size: 16,
                 ),
               ),
             ),
           ],
         );
-
       case ActivityType.returned:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F8F0),
+            color: AppColors.green.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
+          child: Text(
             'SUCCESS',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Colors.green,
+              color: AppColors.green,
               letterSpacing: 0.5,
             ),
           ),
         );
-
       case ActivityType.system:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F0F0),
+            color: AppColors.textMuted.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
+          child: Text(
             'SYSTEM',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Colors.grey,
+              color: AppColors.textMuted,
               letterSpacing: 0.5,
             ),
           ),
@@ -259,11 +255,11 @@ class _ActivityRow extends StatelessWidget {
   Color get _iconBgColor {
     switch (activity.type) {
       case ActivityType.request:
-        return const Color(0xFFEEF0FF);
+        return const Color(0xFF5B5FC7).withValues(alpha: 0.15);
       case ActivityType.returned:
-        return const Color(0xFFE8F8F0);
+        return AppColors.green.withValues(alpha: 0.15);
       case ActivityType.system:
-        return const Color(0xFFF0F0F0);
+        return AppColors.textMuted.withValues(alpha: 0.15);
     }
   }
 
@@ -272,9 +268,9 @@ class _ActivityRow extends StatelessWidget {
       case ActivityType.request:
         return const Color(0xFF5B5FC7);
       case ActivityType.returned:
-        return Colors.green;
+        return AppColors.green;
       case ActivityType.system:
-        return Colors.grey;
+        return AppColors.textMuted;
     }
   }
 

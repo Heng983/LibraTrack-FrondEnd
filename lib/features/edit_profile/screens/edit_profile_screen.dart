@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
 import 'package:libratrack_application/features/profile/widgets/profile_avatar.dart';
-import 'package:provider/provider.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -35,7 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final student = context.read<AuthProvider>().student;
+    final student = ref.read(authProvider).student;
     _nameController.text = student?.name ?? '';
     _selectedDepartment = student?.department ?? 'Library Science';
   }
@@ -51,7 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthProvider>();
+    final auth = ref.read(authProvider.notifier);
     final success = await auth.updateProfile(
       name: _nameController.text.trim(),
       department: _selectedDepartment,
@@ -64,22 +65,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully!')),
+      GlassSnackBar.show(
+        context,
+        'Profile updated successfully!',
+        type: GlassSnackBarType.success,
       );
       Navigator.pop(context);
     } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Failed to update profile'),
-        ),
+      final errorMessage = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        errorMessage ?? 'Failed to update profile',
+        type: GlassSnackBarType.error,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final auth = ref.watch(authProvider);
     final student = auth.student;
 
     return Scaffold(
@@ -93,14 +97,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_back_rounded,
                       color: AppColors.navy,
                       size: 24,
                     ),
                   ),
                   const Spacer(),
-                  const Text(
+                  Text(
                     'Edit Profile',
                     style: TextStyle(
                       fontSize: 18,
@@ -113,14 +117,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     Container(
                       width: double.infinity,
-                      color: const Color(0xFFDDE3F0),
+                      color: AppColors.borderColor,
                       padding: const EdgeInsets.symmetric(vertical: 28),
                       child: Column(
                         children: [
@@ -129,14 +133,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             name: student?.name ?? '',
                             studentId: student?.studentId ?? '',
                             onTap: () async {
-                              final success = await context
-                                  .read<AuthProvider>()
+                              final success = await ref
+                                  .read(authProvider.notifier)
                                   .uploadProfileImage();
                               if (success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Profile image updated!'),
-                                  ),
+                                GlassSnackBar.show(
+                                  context,
+                                  'Profile image updated!',
+                                  type: GlassSnackBarType.success,
                                 );
                               }
                             },
@@ -173,17 +177,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 vertical: 14,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEAEDF5),
+                                color: AppColors.fieldBg,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color(0xFFD0D5E8),
+                                  color: AppColors.borderColor,
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.email_outlined,
-                                    color: Color(0xFF9AA3B8),
+                                    color: AppColors.hintGray,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 12),
@@ -191,7 +195,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     student?.email ?? '',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.grey[500],
+                                      color: AppColors.textMuted,
                                     ),
                                   ),
                                 ],
@@ -206,17 +210,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.card,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color(0xFFD0D5E8),
+                                  color: AppColors.borderColor,
                                 ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.school_outlined,
-                                    color: Color(0xFF9AA3B8),
+                                    color: AppColors.hintGray,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 12),
@@ -225,11 +229,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       child: DropdownButton<String>(
                                         value: _selectedDepartment,
                                         isExpanded: true,
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons.keyboard_arrow_down_rounded,
                                           color: AppColors.navy,
                                         ),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           color: AppColors.navy,
                                           fontWeight: FontWeight.w500,
@@ -269,8 +273,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               },
                             ),
                             const SizedBox(height: 20),
-
-                            // Confirm Password
                             const FieldLabel(label: 'CONFIRM PASSWORD'),
                             const SizedBox(height: 8),
                             InputField(
@@ -291,7 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               onPressed: auth.isLoading ? null : _handleSave,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.navy,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.onPrimary,
                                 minimumSize: const Size.fromHeight(52),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -299,8 +301,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 elevation: 0,
                               ),
                               child: auth.isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
+                                  ? CircularProgressIndicator(
+                                      color: AppColors.onPrimary,
                                     )
                                   : const Text(
                                       'Save Changes',

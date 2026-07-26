@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
-import 'package:provider/provider.dart';
 
-class AdminLoginScreen extends StatefulWidget {
+class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
   @override
-  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
+  ConsumerState<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _AdminLoginScreenState extends State<AdminLoginScreen> {
-  final _formKey = GlobalKey<FormState>(); // ← add this
+class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _adminIdController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
@@ -31,14 +32,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     final adminId = _adminIdController.text.trim();
     final password = _passwordController.text.trim();
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.adminLogin(adminId: adminId, password: password);
+    final success = await ref
+        .read(authProvider.notifier)
+        .adminLogin(adminId: adminId, password: password);
+
+    if (!mounted) return;
 
     if (success) {
       Navigator.pushReplacementNamed(context, '/admin/dashboard');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Login failed')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Login failed',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -46,7 +53,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F8),
+      backgroundColor: AppColors.bgGray,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -63,14 +70,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         color: AppColors.navy,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.menu_book_rounded,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
+                    Text(
                       'LibraTrack',
                       style: TextStyle(
                         fontSize: 22,
@@ -82,7 +89,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Admin Access',
                   style: TextStyle(
                     fontSize: 18,
@@ -93,7 +100,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 const SizedBox(height: 28),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.borderColor),
                   ),
@@ -146,7 +153,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  title: const Text(
+                                  title: Text(
                                     'Forgot Password?',
                                     style: TextStyle(
                                       color: AppColors.navy,
@@ -160,7 +167,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
-                                      child: const Text(
+                                      child: Text(
                                         'OK',
                                         style: TextStyle(
                                           color: AppColors.navy,
@@ -172,7 +179,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               'Forgot Password?',
                               style: TextStyle(
                                 color: AppColors.teal,
@@ -195,18 +202,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                               visualDensity: VisualDensity.compact,
                             ),
                             const SizedBox(width: 4),
-                            const Text(
+                            Text(
                               'Remember me',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF3A3A4A),
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Sign In button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -214,7 +219,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             onPressed: _handleSignIn,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.navy,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -241,8 +246,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Back to Student Login
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
@@ -254,7 +257,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       border: Border.all(color: AppColors.borderColor),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -262,7 +265,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           size: 15,
                           color: AppColors.navy,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
                           'Back to Student Login',
                           style: TextStyle(
@@ -276,31 +279,35 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Security badges
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.security_rounded,
                       size: 14,
-                      color: Colors.grey[500],
+                      color: AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Secure 256-bit SSL',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Icon(
                       Icons.verified_user_outlined,
                       size: 14,
-                      color: Colors.grey[500],
+                      color: AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Identity Protected',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),

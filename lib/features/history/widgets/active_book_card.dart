@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
+import 'package:libratrack_application/features/history/screens/borrow_detail_screen.dart';
 
 class ActiveBookCard extends StatelessWidget {
   final BorrowRecordModel item;
@@ -9,21 +10,29 @@ class ActiveBookCard extends StatelessWidget {
 
   int get _daysUntilDue {
     if (item.dueDate == null) return 99;
-    return item.dueDate!.difference(DateTime.now()).inDays;
+    final due = item.dueDate!.toLocal();
+    final now = DateTime.now();
+    // Compare calendar dates so partial days don't skew the count.
+    return DateTime(due.year, due.month, due.day)
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
   }
 
   @override
   Widget build(BuildContext context) {
-    final isUrgent = _daysUntilDue <= 3;
-    final dueBadgeColor = isUrgent
-        ? const Color(0xFFD32F2F)
-        : const Color(0xFF2ECC71);
-    final dueText = 'DUE IN $_daysUntilDue DAYS';
+    final days = _daysUntilDue;
+    final isUrgent = days <= 3;
+    final dueBadgeColor = isUrgent ? AppColors.red : AppColors.green;
+    final dueText = days < 0
+        ? 'OVERDUE BY ${-days} ${days == -1 ? 'DAY' : 'DAYS'}'
+        : days == 0
+        ? 'DUE TODAY'
+        : 'DUE IN $days ${days == 1 ? 'DAY' : 'DAYS'}';
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -64,7 +73,7 @@ class ActiveBookCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         item.book?.title ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.navy,
@@ -73,9 +82,9 @@ class ActiveBookCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         item.book?.author ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
-                          color: Color(0xFF888888),
+                          color: AppColors.textMuted,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -102,9 +111,9 @@ class ActiveBookCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         'Borrowed: ${item.borrowedAt?.toLocal().toString().split(' ')[0] ?? ''}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFFAAAAAA),
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -114,39 +123,54 @@ class ActiveBookCard extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
 
           // Actions
           Container(
-            color: const Color(0xFFF5F6FA),
+            color: AppColors.fieldBg,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 16,
-                      color: Colors.grey[600],
+                InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BorrowDetailScreen(item: item),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'DETAILS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey[800],
-                        letterSpacing: 0.6,
-                      ),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 6,
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DETAILS',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.navy,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                     minimumSize: const Size(130, 40),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -174,8 +198,8 @@ class ActiveBookCard extends StatelessWidget {
     return Container(
       width: 90,
       height: 120,
-      color: const Color(0xFFEAEDF5),
-      child: const Icon(Icons.book_rounded, color: Colors.grey, size: 32),
+      color: AppColors.fieldBg,
+      child: Icon(Icons.book_rounded, color: AppColors.textMuted, size: 32),
     );
   }
 }

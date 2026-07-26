@@ -11,9 +11,12 @@ class DueDateBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F2FF),
+        color: AppColors.navy.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFDCE1FF), width: 1),
+        border: Border.all(
+          color: AppColors.navy.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +49,7 @@ class DueDateBanner extends StatelessWidget {
                   'A reminder will be sent to your email 2 days before the due date.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[800],
+                    color: AppColors.textMuted,
                     height: 1.4,
                   ),
                 ),

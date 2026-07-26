@@ -13,18 +13,18 @@ class TechnicalDetails extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF0FB), // light lavender background
+        color: AppColors.fieldBg, // light lavender background
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // left-align title
         children: [
-          const Text(
+          Text(
             "Technical Details",
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0D1B4B),
+              color: AppColors.navy,
             ),
           ),
           const SizedBox(height: 16),
@@ -51,10 +51,13 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[800])),
+          Text(
+            label,
+            style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+          ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: AppColors.black,

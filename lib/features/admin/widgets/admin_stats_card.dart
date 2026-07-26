@@ -17,11 +17,11 @@ class AdminStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -32,7 +32,7 @@ class AdminStatsCard extends StatelessWidget {
           _StatItem(
             value: _formatNumber(totalBooks),
             label: 'BOOKS',
-            color: Color(0xFF1A1A2E),
+            color: AppColors.textPrimary,
             showDivider: true,
           ),
           _StatItem(
@@ -80,7 +80,7 @@ class _StatItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           border: showDivider
-              ? const Border(right: BorderSide(color: Color(0xFFEEEEEE)))
+              ? Border(right: BorderSide(color: AppColors.borderColor))
               : null,
         ),
         child: Column(
@@ -99,7 +99,7 @@ class _StatItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
+                color: AppColors.textMuted,
                 letterSpacing: 0.5,
               ),
             ),

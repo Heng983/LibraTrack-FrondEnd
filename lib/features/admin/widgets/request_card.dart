@@ -6,12 +6,14 @@ class RequestCard extends StatelessWidget {
   final BorrowRequestModel requestModel;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback? onMarkReturned;
 
   const RequestCard({
     super.key,
     required this.requestModel,
     required this.onApprove,
     required this.onReject,
+    this.onMarkReturned,
   });
 
   @override
@@ -23,10 +25,10 @@ class RequestCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
+        color: AppColors.card,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -48,9 +50,13 @@ class RequestCard extends StatelessWidget {
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 height: 160,
-                color: const Color(0xFFEAEDF5),
-                child: const Center(
-                  child: Icon(Icons.book_rounded, color: Colors.grey, size: 48),
+                color: AppColors.fieldBg,
+                child: Center(
+                  child: Icon(
+                    Icons.book_rounded,
+                    color: AppColors.textMuted,
+                    size: 48,
+                  ),
                 ),
               ),
             ),
@@ -66,10 +72,10 @@ class RequestCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         requestModel.bookTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A2E),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -81,8 +87,8 @@ class RequestCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isPriority
-                            ? const Color(0xFFE8F8F0)
-                            : const Color(0xFFF0F0F0),
+                            ? AppColors.green.withValues(alpha: 0.15)
+                            : AppColors.textMuted.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -92,7 +98,7 @@ class RequestCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: isPriority
                               ? AppColors.green
-                              : Colors.grey[600],
+                              : AppColors.textMuted,
                         ),
                       ),
                     ),
@@ -101,7 +107,7 @@ class RequestCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   'Requested by : ${requestModel.studentName}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.navy,
@@ -113,23 +119,29 @@ class RequestCard extends StatelessWidget {
                     Icon(
                       Icons.calendar_today_outlined,
                       size: 13,
-                      color: Colors.grey[500],
+                      color: AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       requestModel.requestDate,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Icon(
                       Icons.badge_outlined,
                       size: 13,
-                      color: Colors.grey[500],
+                      color: AppColors.textMuted,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'ID: ${requestModel.studentId}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      'ID: ${requestModel.studentCode.isNotEmpty ? requestModel.studentCode : requestModel.studentId}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -142,7 +154,7 @@ class RequestCard extends StatelessWidget {
                           onPressed: onApprove,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.navy,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppColors.onPrimary,
                             minimumSize: const Size.fromHeight(44),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -163,10 +175,7 @@ class RequestCard extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: onReject,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: AppColors.red,
-                              width: 1.5,
-                            ),
+                            side: BorderSide(color: AppColors.red, width: 1.5),
                             foregroundColor: AppColors.red,
                             minimumSize: const Size.fromHeight(44),
                             shape: RoundedRectangleBorder(
@@ -185,7 +194,7 @@ class RequestCard extends StatelessWidget {
                       ),
                     ],
                   )
-                else
+                else ...[
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -203,6 +212,33 @@ class RequestCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (requestModel.status == 'approved' &&
+                      onMarkReturned != null) ...[
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: onMarkReturned,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppColors.teal, width: 1.5),
+                        foregroundColor: AppColors.teal,
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.assignment_turned_in_outlined,
+                        size: 18,
+                      ),
+                      label: const Text(
+                        'Mark as Returned',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ],
             ),
           ),
@@ -214,13 +250,13 @@ class RequestCard extends StatelessWidget {
   Color _statusBgColor(String status) {
     switch (status) {
       case 'approved':
-        return const Color(0xFFE8F8F0);
+        return AppColors.green.withValues(alpha: 0.15);
       case 'rejected':
-        return const Color(0xFFFFEEEE);
+        return AppColors.red.withValues(alpha: 0.15);
       case 'returned':
-        return const Color(0xFFEEF0FF);
+        return const Color(0xFF5B5FC7).withValues(alpha: 0.15);
       default:
-        return const Color(0xFFF0F0F0);
+        return AppColors.textMuted.withValues(alpha: 0.15);
     }
   }
 
@@ -233,7 +269,7 @@ class RequestCard extends StatelessWidget {
       case 'returned':
         return const Color(0xFF5B5FC7);
       default:
-        return Colors.grey;
+        return AppColors.textMuted;
     }
   }
 }

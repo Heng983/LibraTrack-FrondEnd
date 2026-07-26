@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/student_loginscreen.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
-import 'package:provider/provider.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
+class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key, required this.email});
 
   final String email;
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final _formKey = GlobalKey<FormState>(); // ← add this
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -28,17 +30,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _handleResetPassword() async {
-    if (!_formKey.currentState!.validate()) return; // ← validate first
+    if (!_formKey.currentState!.validate()) return;
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.resetPassword(
-      widget.email,
-      _newPasswordController.text.trim(),
-    );
+    final success = await ref
+        .read(authProvider.notifier)
+        .resetPassword(widget.email, _newPasswordController.text.trim());
+
+    if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset successfully')),
+      GlassSnackBar.show(
+        context,
+        'Password reset successfully',
+        type: GlassSnackBarType.success,
       );
       Navigator.pushAndRemoveUntil(
         context,
@@ -46,10 +50,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         (route) => false,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Failed to reset password'),
-        ),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Failed to reset password',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -71,14 +76,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     color: AppColors.navy,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_book_rounded,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     size: 32,
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
+                Text(
                   'LibraTrack',
                   style: TextStyle(
                     fontSize: 22,
@@ -93,17 +98,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey[600],
+                    color: AppColors.textMuted,
                     height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 28),
 
-                // ── Card ──
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   padding: const EdgeInsets.all(24),
@@ -112,7 +116,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Create New Password',
                           style: TextStyle(
                             fontSize: 20,
@@ -125,7 +129,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           'Please choose a password that is secure and easy to remember.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: AppColors.textMuted,
                             height: 1.5,
                           ),
                         ),
@@ -179,7 +183,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             onPressed: _handleResetPassword,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.navy,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),

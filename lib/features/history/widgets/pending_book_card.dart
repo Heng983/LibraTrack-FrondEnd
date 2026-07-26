@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
+import 'package:libratrack_application/features/history/screens/pending_borrow_detail_screen.dart';
 
 class PendingBookCard extends StatelessWidget {
   final BorrowRecordModel item;
@@ -17,7 +18,7 @@ class PendingBookCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -55,7 +56,7 @@ class PendingBookCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         item.book?.title ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.navy,
@@ -66,7 +67,7 @@ class PendingBookCard extends StatelessWidget {
                         item.book?.author ?? '',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Color(0xFF888888),
+                          color: AppColors.textMuted,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -96,33 +97,52 @@ class PendingBookCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
           Container(
-            color: Color(0xFFF5F6FA),
+            color: AppColors.fieldBg,
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(
-                  Icons.info_outline_rounded,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'DETAILS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey[800],
-                    letterSpacing: 0.6,
+                InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PendingBorrowDetailScreen(item: item),
+                    ),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DETAILS',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const Spacer(),
                 OutlinedButton(
                   onPressed: onCancel,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red, width: 1.5),
-                    foregroundColor: Colors.red,
+                    side: BorderSide(color: AppColors.red, width: 1.5),
+                    foregroundColor: AppColors.red,
                     minimumSize: const Size(150, 40),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -149,8 +169,8 @@ class PendingBookCard extends StatelessWidget {
     return Container(
       width: 90,
       height: 120,
-      color: const Color(0xFFEAEDF5),
-      child: const Icon(Icons.book_rounded, color: Colors.grey, size: 32),
+      color: AppColors.fieldBg,
+      child: Icon(Icons.book_rounded, color: AppColors.textMuted, size: 32),
     );
   }
 }

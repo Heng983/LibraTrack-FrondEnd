@@ -1,70 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/screens/borrow_cart_screen.dart';
 import 'package:libratrack_application/features/history/screens/history_screen.dart';
+import 'package:libratrack_application/features/navigation/providers/nav_index_provider.dart';
 import 'package:libratrack_application/features/profile/screens/profile_screen.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:libratrack_application/features/book_catalog/screens/book_catalog_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerWidget {
   const MainScreen({super.key});
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    const BookCatalogScreen(),
-    const BorrowCartScreen(),
-    const HistoryScreen(),
-    const ProfileScreen(),
+  static const List<Widget> _pages = [
+    BookCatalogScreen(),
+    BorrowCartScreen(),
+    HistoryScreen(),
+    ProfileScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(mainTabIndexProvider);
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: currentIndex, children: _pages),
       bottomNavigationBar: SalomonBottomBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
+        backgroundColor: AppColors.card,
+        unselectedItemColor: AppColors.textMuted,
         onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          ref.read(mainTabIndexProvider.notifier).set(index);
         },
         items: [
           SalomonBottomBarItem(
             icon: const Icon(Icons.library_books_outlined),
-            title: const Text(
-              "Catalog",
-              style: TextStyle(color: Color(0xFF006F66)),
-            ),
-            selectedColor: const Color.fromARGB(255, 1, 187, 162),
+            title: Text("Catalog", style: TextStyle(color: AppColors.teal)),
+            selectedColor: AppColors.teal,
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.book_outlined),
-            title: const Text(
-              "My Borrow",
-              style: TextStyle(color: Color(0xFF006F66)),
-            ),
-            selectedColor: const Color.fromARGB(255, 1, 187, 162),
+            title: Text("My Borrow", style: TextStyle(color: AppColors.teal)),
+            selectedColor: AppColors.teal,
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.inventory_2_outlined),
-            title: const Text(
-              "History",
-              style: TextStyle(color: Color(0xFF006F66)),
-            ),
-            selectedColor: const Color.fromARGB(255, 1, 187, 162),
+            title: Text("History", style: TextStyle(color: AppColors.teal)),
+            selectedColor: AppColors.teal,
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.person_outline),
-            title: const Text(
-              "Profile",
-              style: TextStyle(color: Color(0xFF006F66)),
-            ),
-            selectedColor: const Color.fromARGB(255, 1, 187, 162),
+            title: Text("Profile", style: TextStyle(color: AppColors.teal)),
+            selectedColor: AppColors.teal,
           ),
         ],
       ),

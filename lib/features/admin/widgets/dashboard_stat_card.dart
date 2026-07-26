@@ -28,12 +28,12 @@ class DashboardStatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border(left: BorderSide(color: leftBorderColor, width: 4)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -60,7 +60,7 @@ class DashboardStatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
+                    color: AppColors.textMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -70,7 +70,7 @@ class DashboardStatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A2E),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -82,7 +82,7 @@ class DashboardStatCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: badgeColor ?? Colors.green,
+                color: badgeColor ?? AppColors.green,
               ),
             ),
         ],

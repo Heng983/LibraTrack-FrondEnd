@@ -15,7 +15,7 @@ class BookDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.card,
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -44,7 +44,7 @@ class BookDetailScreen extends StatelessWidget {
                         book.author,
                         style: TextStyle(
                           fontSize: 18,
-                          color: Colors.grey[800],
+                          color: AppColors.textMuted,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -54,7 +54,7 @@ class BookDetailScreen extends StatelessWidget {
                         reviewCount: book.reviewCount,
                       ),
                       const SizedBox(height: 20),
-                      const Divider(color: Colors.grey, thickness: 1),
+                      Divider(color: AppColors.divider, thickness: 1),
                       const SizedBox(height: 16),
                       Text(
                         "Book Description",
@@ -69,7 +69,7 @@ class BookDetailScreen extends StatelessWidget {
                         book.description,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[800],
+                          color: AppColors.textMuted,
                           height: 1.6,
                         ),
                       ),

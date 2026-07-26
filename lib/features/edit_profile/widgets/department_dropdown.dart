@@ -32,7 +32,7 @@ class DepartmentDropdown extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF888888),
+            color: AppColors.textMuted,
             letterSpacing: 0.8,
           ),
         ),
@@ -42,29 +42,29 @@ class DepartmentDropdown extends StatelessWidget {
           onChanged: onChanged,
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Color(0xFF999999),
+            color: AppColors.hintGray,
           ),
           style: TextStyle(fontSize: 15, color: AppColors.navy),
           decoration: InputDecoration(
             prefixIcon: Icon(
               Icons.school_outlined,
               size: 20,
-              color: Color(0xFF999999),
+              color: AppColors.hintGray,
             ),
             filled: true,
-            fillColor: AppColors.white,
+            fillColor: AppColors.card,
             contentPadding: const EdgeInsets.symmetric(vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.navy, width: 1.5),
+              borderSide: BorderSide(color: AppColors.navy, width: 1.5),
             ),
           ),
           items: departments

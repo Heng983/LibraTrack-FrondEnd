@@ -21,11 +21,11 @@ class AdminProfileHeader extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 28),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -38,7 +38,7 @@ class AdminProfileHeader extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Color(0xFFEEEEEE), width: 3),
+              border: Border.all(color: AppColors.borderColor, width: 3),
             ),
             child: ClipOval(
               child: imageUrl != null
@@ -64,7 +64,7 @@ class AdminProfileHeader extends StatelessWidget {
             role,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -94,8 +94,8 @@ class AdminProfileHeader extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: const Color(0xFFEAEDF5),
-      child: const Icon(Icons.person_rounded, size: 50, color: Colors.grey),
+      color: AppColors.fieldBg,
+      child: Icon(Icons.person_rounded, size: 50, color: AppColors.textMuted),
     );
   }
 }
