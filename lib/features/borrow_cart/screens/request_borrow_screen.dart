@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/book_catalog/models/book_model.dart';
-import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_provider.dart';
+import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_notifier.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/agree_checkbox.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/book_info_card.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/due_date_banner.dart';
@@ -10,18 +12,18 @@ import 'package:libratrack_application/features/borrow_cart/widgets/requests/dur
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/reason_text_field.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/student_info_card.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/submit_button.dart';
-import 'package:provider/provider.dart';
 
-class RequestBorrowScreen extends StatefulWidget {
+class RequestBorrowScreen extends ConsumerStatefulWidget {
   final BookModel book;
 
   const RequestBorrowScreen({super.key, required this.book});
 
   @override
-  State<RequestBorrowScreen> createState() => _RequestBorrowScreenState();
+  ConsumerState<RequestBorrowScreen> createState() =>
+      _RequestBorrowScreenState();
 }
 
-class _RequestBorrowScreenState extends State<RequestBorrowScreen> {
+class _RequestBorrowScreenState extends ConsumerState<RequestBorrowScreen> {
   String _selectedDuration = '7 Days';
   bool _agreedToTerms = false;
   final _reasonController = TextEditingController();
@@ -59,15 +61,14 @@ class _RequestBorrowScreenState extends State<RequestBorrowScreen> {
 
   void _handleSubmit() async {
     if (!_agreedToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please agree to the terms before submitting.'),
-        ),
+      GlassSnackBar.show(
+        context,
+        'Please agree to the terms before submitting.',
       );
       return;
     }
 
-    final borrow = context.read<BorrowCartProvider>();
+    final borrow = ref.read(borrowCartProvider.notifier);
     final days = int.parse(_selectedDuration.split(' ')[0]);
 
     final success = await borrow.requestBorrow(
@@ -76,29 +77,35 @@ class _RequestBorrowScreenState extends State<RequestBorrowScreen> {
       durationDays: days,
     );
 
-    if (success) {
-      // ← remove this specific book from cart
-      final cart = context.read<BorrowCartProvider>();
-      final index = cart.items.indexWhere((b) => b.id == widget.book.id);
-      if (index != -1) cart.removeItem(index);
+    if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Request submitted successfully!')),
+    if (success) {
+      final cart = ref.read(borrowCartProvider);
+      final index = cart.cartItems.indexWhere((b) => b.id == widget.book.id);
+      if (index != -1) borrow.removeItem(index);
+
+      GlassSnackBar.show(
+        context,
+        'Request submitted successfully!',
+        type: GlassSnackBarType.success,
       );
-      Navigator.pop(context); // ← go back to cart
+      Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(borrow.error ?? 'Failed to submit')),
+      final error = ref.read(borrowCartProvider).error;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Failed to submit',
+        type: GlassSnackBarType.error,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final student = context.read<AuthProvider>().student;
+    final student = ref.watch(authProvider).student;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF8F8FE),
+      backgroundColor: AppColors.bgcolor,
       body: SafeArea(
         child: Column(
           children: [
@@ -126,7 +133,7 @@ class _RequestBorrowScreenState extends State<RequestBorrowScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: Colors.grey),
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(20),

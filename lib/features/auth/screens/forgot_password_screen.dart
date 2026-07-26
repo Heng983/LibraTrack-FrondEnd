@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/otp_screen.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
-import 'package:provider/provider.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -27,8 +29,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final email = _emailController.text.trim();
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.forgotPassword(email);
+    final success = await ref.read(authProvider.notifier).forgotPassword(email);
+
+    if (!mounted) return;
 
     if (success) {
       Navigator.push(
@@ -36,8 +39,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         MaterialPageRoute(builder: (_) => OTPScreen(email: email)),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Email not found')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Email not found',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -56,17 +62,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_book_rounded,
                     color: AppColors.navy,
                     size: 28,
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'LibraTrack',
                   style: TextStyle(
                     fontSize: 22,
@@ -77,11 +83,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Card ──
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   padding: const EdgeInsets.all(24),
@@ -90,7 +95,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Forgot Password',
                           style: TextStyle(
                             fontSize: 20,
@@ -103,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           'Enter your registered university email address to receive password reset instructions.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: AppColors.textMuted,
                             height: 1.5,
                           ),
                         ),
@@ -137,7 +142,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             onPressed: _handleForgotPassword,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.navy,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -165,7 +170,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         Center(
                           child: GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
@@ -173,7 +178,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   size: 15,
                                   color: AppColors.navy,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Text(
                                   'Back to Login',
                                   style: TextStyle(
@@ -194,7 +199,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             '© 2024 LibraTrack Academic Systems',
                             style: TextStyle(
                               fontSize: 11.5,
-                              color: Colors.grey[500],
+                              color: AppColors.textMuted,
                             ),
                           ),
                         ),

@@ -57,11 +57,11 @@ class ProfileAvatar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.navy,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: AppColors.onPrimary, width: 2),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.camera_alt_rounded,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     size: 16,
                   ),
                 ),
@@ -72,7 +72,7 @@ class ProfileAvatar extends StatelessWidget {
         const SizedBox(height: 14),
         Text(
           name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: AppColors.navy,
@@ -81,7 +81,7 @@ class ProfileAvatar extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'ID: $studentId',
-          style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          style: TextStyle(fontSize: 14, color: AppColors.textMuted),
         ),
       ],
     );
@@ -89,8 +89,8 @@ class ProfileAvatar extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: const Color(0xFFEAEDF5),
-      child: const Icon(Icons.person_rounded, size: 50, color: Colors.grey),
+      color: AppColors.fieldBg,
+      child: Icon(Icons.person_rounded, size: 50, color: AppColors.textMuted),
     );
   }
 }

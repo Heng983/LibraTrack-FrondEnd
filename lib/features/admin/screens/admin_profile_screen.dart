@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/admin/providers/dashboard_provider.dart';
+import 'package:libratrack_application/core/theme/theme_notifier.dart';
+import 'package:libratrack_application/features/admin/providers/dashboard_notifier.dart';
 import 'package:libratrack_application/features/admin/widgets/admin_account_details.dart';
 import 'package:libratrack_application/features/admin/widgets/admin_profile_header.dart';
 import 'package:libratrack_application/features/admin/widgets/admin_stats_card.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/student_loginscreen.dart';
-import 'package:provider/provider.dart';
 
-class AdminProfileScreen extends StatefulWidget {
+class AdminProfileScreen extends ConsumerStatefulWidget {
   const AdminProfileScreen({super.key});
 
   @override
-  State<AdminProfileScreen> createState() => _AdminProfileScreenState();
+  ConsumerState<AdminProfileScreen> createState() => _AdminProfileScreenState();
 }
 
-class _AdminProfileScreenState extends State<AdminProfileScreen> {
+class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final dash = context.read<DashboardProvider>();
-      if (dash.dashboard == null) {
-        dash.loadDashboard();
+    Future.microtask(() {
+      final state = ref.read(dashboardProvider);
+      if (state.dashboard == null) {
+        ref.read(dashboardProvider.notifier).loadDashboard();
       }
     });
   }
@@ -47,8 +48,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final admin = context.watch<AuthProvider>().admin;
-    final dash = context.watch<DashboardProvider>().dashboard;
+    final admin = ref.watch(authProvider).admin;
+    final dash = ref.watch(dashboardProvider).dashboard;
+    final isDark = ref.watch(themeProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgcolor,
       body: SafeArea(
@@ -69,7 +72,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   const Spacer(),
                   GestureDetector(
                     onTap: () async {
-                      await context.read<AuthProvider>().logout();
+                      await ref.read(authProvider.notifier).logout();
                       if (context.mounted) {
                         Navigator.pushAndRemoveUntil(
                           context,
@@ -80,16 +83,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         );
                       }
                     },
-                    child: const Icon(
-                      Icons.logout,
-                      color: AppColors.red,
-                      size: 24,
-                    ),
+                    child: Icon(Icons.logout, color: AppColors.red, size: 24),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Colors.grey),
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -114,6 +113,50 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       lastLogin: admin?.lastLoginAt != null
                           ? _formatDate(admin!.lastLoginAt!)
                           : 'First login',
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.dark_mode_outlined,
+                            color: AppColors.teal,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Dark Mode',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: isDark,
+                            activeThumbColor: AppColors.teal,
+                            onChanged: (_) =>
+                                ref.read(themeProvider.notifier).toggle(),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/book_catalog/models/book_model.dart';
 
 class AvailabilityBage extends StatelessWidget {
@@ -14,13 +15,13 @@ class AvailabilityBage extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: book.available
-                ? const Color(0xFF86F2E4)
-                : const Color(0xFFFFDAD6),
+                ? AppColors.teal.withValues(alpha: 0.15)
+                : AppColors.red.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: book.available
-                  ? const Color(0xFF86F2E4)
-                  : const Color(0xFFFFDAD6),
+                  ? AppColors.teal.withValues(alpha: 0.15)
+                  : AppColors.red.withValues(alpha: 0.15),
               width: 1,
             ),
           ),
@@ -31,9 +32,7 @@ class AvailabilityBage extends StatelessWidget {
                     ? Icons.check_circle_outline
                     : Icons.cancel_outlined,
                 size: 13,
-                color: book.available
-                    ? const Color(0xFF006F66)
-                    : const Color(0xFF93000A),
+                color: book.available ? AppColors.teal : AppColors.red,
               ),
               const SizedBox(width: 4),
               Text(
@@ -42,9 +41,7 @@ class AvailabilityBage extends StatelessWidget {
                     : "Borrowed",
                 style: TextStyle(
                   fontSize: 12,
-                  color: book.available
-                      ? const Color(0xFF006F66)
-                      : const Color(0xFF93000A),
+                  color: book.available ? AppColors.teal : AppColors.red,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -55,14 +52,14 @@ class AvailabilityBage extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Color(0xFFF0F2F8),
+            color: AppColors.fieldBg,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             book.category,
             style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF0D1B4B),
+              color: AppColors.navy,
               fontWeight: FontWeight.w500,
             ),
           ),

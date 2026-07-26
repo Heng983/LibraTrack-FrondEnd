@@ -43,29 +43,33 @@ class BookCover extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 25,
+            top: 42,
             left: 25,
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                width: 38,
-                height: 38,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: AppColors.card.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.arrow_back_rounded, size: 20),
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  size: 18,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
           ),
           Positioned(
-            top: 25,
+            top: 42,
             right: 25,
             child: Container(
-              width: 38,
-              height: 38,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: AppColors.card.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.share_rounded, color: AppColors.navy, size: 20),

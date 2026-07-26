@@ -29,7 +29,7 @@ class ProfileFormField extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF888888),
+            color: AppColors.textMuted,
             letterSpacing: 0.8,
           ),
         ),
@@ -41,24 +41,24 @@ class ProfileFormField extends StatelessWidget {
           obscureText: obscureText,
           style: TextStyle(
             fontSize: 15,
-            color: enabled ? AppColors.navy : const Color(0xFF999999),
+            color: enabled ? AppColors.navy : AppColors.textMuted,
           ),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, size: 20, color: Color(0xFF999999)),
+            prefixIcon: Icon(icon, size: 20, color: AppColors.hintGray),
             filled: true,
-            fillColor: enabled ? Colors.white : Color(0xFFF5F6FA),
+            fillColor: enabled ? AppColors.card : AppColors.fieldBg,
             contentPadding: EdgeInsets.symmetric(vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFFDDDDDD)),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFFDDDDDD)),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFFEEEEEE)),
+              borderSide: BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

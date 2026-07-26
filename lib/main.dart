@@ -1,64 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/services/api_service.dart';
-import 'package:libratrack_application/features/admin/providers/borrow_request_provider.dart';
-import 'package:libratrack_application/features/admin/providers/dashboard_provider.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/theme/app_color.dart';
+import 'package:libratrack_application/core/theme/theme_notifier.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/student_loginscreen.dart';
-import 'package:libratrack_application/features/book_catalog/providers/book_provider.dart';
-import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_provider.dart';
 import 'package:libratrack_application/features/navigation/admin_navigation_bar.dart';
 import 'package:libratrack_application/features/navigation/main_screen.dart';
-import 'package:provider/provider.dart';
 
-void main() {
+Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+  AppColors.isDark = prefs.getBool('dark_mode') ?? false;
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => BorrowCartProvider()),
-        ChangeNotifierProvider(create: (_) => BookProvider()),
-        ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => BorrowRequestProvider()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'LibraTrack',
-        home: const SplashDecider(),
-        routes: {
-          '/admin': (context) => const AdminNavigationBar(),
-          '/admin/dashboard': (context) => const AdminNavigationBar(),
-          '/student': (context) => const MainScreen(),
-          '/login': (context) => const StudentLoginScreen(),
-        },
-        onUnknownRoute: (settings) => MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('Route not found: ${settings.name}')),
-          ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeProvider);
+    return MaterialApp(
+      key: ValueKey(isDark),
+      debugShowCheckedModeBanner: false,
+      title: 'LibraTrack',
+      home: const SplashDecider(),
+      routes: {
+        '/admin': (context) => const AdminNavigationBar(),
+        '/admin/dashboard': (context) => const AdminNavigationBar(),
+        '/student': (context) => const MainScreen(),
+        '/login': (context) => const StudentLoginScreen(),
+      },
+      onUnknownRoute: (settings) => MaterialPageRoute(
+        builder: (_) => Scaffold(
+          body: Center(child: Text('Route not found: ${settings.name}')),
         ),
       ),
     );
   }
 }
 
-class SplashDecider extends StatefulWidget {
+class SplashDecider extends ConsumerStatefulWidget {
   const SplashDecider({super.key});
 
   @override
-  State<SplashDecider> createState() => _SplashDeciderState();
+  ConsumerState<SplashDecider> createState() => _SplashDeciderState();
 }
 
-class _SplashDeciderState extends State<SplashDecider> {
+class _SplashDeciderState extends ConsumerState<SplashDecider> {
   @override
   void initState() {
     super.initState();
@@ -66,13 +60,30 @@ class _SplashDeciderState extends State<SplashDecider> {
   }
 
   Future<void> _checkAuth() async {
+    final auth = ref.read(authProvider);
+    if (auth.isLoggedIn) {
+      await Future.delayed(Duration.zero);
+      FlutterNativeSplash.remove();
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => auth.admin != null
+              ? const AdminNavigationBar()
+              : const MainScreen(),
+        ),
+      );
+      return;
+    }
+
     await Future.delayed(const Duration(seconds: 2));
 
     final token = await ApiService.getToken();
     final role = await ApiService.getRole();
 
     if (token != null && token.isNotEmpty) {
-      await context.read<AuthProvider>().loadCurrentUser();
+      if (!mounted) return;
+      await ref.read(authProvider.notifier).loadCurrentUser();
     }
 
     FlutterNativeSplash.remove();
@@ -102,9 +113,9 @@ class _SplashDeciderState extends State<SplashDecider> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF0F2F8),
-      body: Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: AppColors.bgGray,
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }

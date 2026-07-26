@@ -2,21 +2,22 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/reset_password_screen.dart';
-import 'package:provider/provider.dart';
 
-class OTPScreen extends StatefulWidget {
+class OTPScreen extends ConsumerStatefulWidget {
   const OTPScreen({super.key, required this.email});
 
   final String email;
 
   @override
-  State<OTPScreen> createState() => _OTPScreenState();
+  ConsumerState<OTPScreen> createState() => _OTPScreenState();
 }
 
-class _OTPScreenState extends State<OTPScreen> {
+class _OTPScreenState extends ConsumerState<OTPScreen> {
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -62,8 +63,12 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (final c in _controllers) c.dispose();
-    for (final f in _focusNodes) f.dispose();
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -79,14 +84,15 @@ class _OTPScreenState extends State<OTPScreen> {
   void _handleVerify() async {
     final code = _controllers.map((c) => c.text).join();
     if (code.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the 6-digit code')),
-      );
+      GlassSnackBar.show(context, 'Please enter the 6-digit code');
       return;
     }
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.verifyOtp(widget.email, code);
+    final success = await ref
+        .read(authProvider.notifier)
+        .verifyOtp(widget.email, code);
+
+    if (!mounted) return;
 
     if (success) {
       Navigator.push(
@@ -96,25 +102,37 @@ class _OTPScreenState extends State<OTPScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Invalid OTP')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Invalid OTP',
+        type: GlassSnackBarType.error,
       );
     }
   }
 
   void _handleResend() async {
     if (!_canResend) return;
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.forgotPassword(widget.email);
+
+    final success = await ref
+        .read(authProvider.notifier)
+        .forgotPassword(widget.email);
+
+    if (!mounted) return;
 
     if (success) {
       _startTimer();
-      ScaffoldMessenger.of(
+      GlassSnackBar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('OTP resent to your email')));
+        'OTP resent to your email',
+        type: GlassSnackBarType.success,
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Failed to resend OTP')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Failed to resend OTP',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -132,10 +150,10 @@ class _OTPScreenState extends State<OTPScreen> {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: EdgeInsets.all(28),
+                  padding: const EdgeInsets.all(28),
                   child: Column(
                     children: [
                       Container(
@@ -166,7 +184,7 @@ class _OTPScreenState extends State<OTPScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[600],
+                          color: AppColors.textMuted,
                           height: 1.5,
                         ),
                       ),
@@ -195,7 +213,7 @@ class _OTPScreenState extends State<OTPScreen> {
                               decoration: InputDecoration(
                                 counterText: '',
                                 filled: true,
-                                fillColor: AppColors.white,
+                                fillColor: AppColors.card,
                                 contentPadding: EdgeInsets.zero,
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
@@ -224,13 +242,13 @@ class _OTPScreenState extends State<OTPScreen> {
                           onPressed: _handleVerify,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.navy,
-                            foregroundColor: AppColors.white,
+                            foregroundColor: AppColors.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
@@ -254,7 +272,7 @@ class _OTPScreenState extends State<OTPScreen> {
                             "Didn't receive a code? ",
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey[600],
+                              color: AppColors.textMuted,
                             ),
                           ),
                           _canResend
@@ -288,7 +306,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Colors.grey[500],
+                    color: AppColors.textMuted,
                     height: 1.5,
                   ),
                 ),

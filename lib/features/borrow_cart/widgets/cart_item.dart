@@ -21,7 +21,7 @@ class CartItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
@@ -39,10 +39,10 @@ class CartItem extends StatelessWidget {
                     errorBuilder: (_, __, ___) => Container(
                       width: 70,
                       height: 90,
-                      color: const Color(0xFFEAEDF5),
-                      child: const Icon(
+                      color: AppColors.fieldBg,
+                      child: Icon(
                         Icons.book_rounded,
-                        color: Colors.grey,
+                        color: AppColors.textMuted,
                         size: 30,
                       ),
                     ),
@@ -68,7 +68,7 @@ class CartItem extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           book.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.black,
@@ -77,9 +77,9 @@ class CartItem extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           book.author,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Colors.black87,
+                            color: AppColors.textMuted,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -90,27 +90,27 @@ class CartItem extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE8F8F0),
+                              color: AppColors.teal.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: const Color(0xFF86F2E4),
+                                color: AppColors.teal.withValues(alpha: 0.4),
                                 width: 1,
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.check_circle_outline,
                                   size: 12,
-                                  color: Color(0xFF006F66),
+                                  color: AppColors.teal,
                                 ),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
                                   'Available for borrow',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Color(0xFF006F66),
+                                    color: AppColors.teal,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -128,9 +128,9 @@ class CartItem extends StatelessWidget {
               right: 0,
               child: GestureDetector(
                 onTap: onRemove,
-                child: const Icon(
+                child: Icon(
                   Icons.delete_forever_outlined,
-                  color: Colors.redAccent,
+                  color: AppColors.red,
                   size: 22,
                 ),
               ),
@@ -138,9 +138,9 @@ class CartItem extends StatelessWidget {
             Positioned(
               bottom: 0,
               right: 0,
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.black,
+                color: AppColors.textPrimary,
                 size: 16,
               ),
             ),

@@ -1,30 +1,32 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/admin/providers/dashboard_provider.dart';
+import 'package:libratrack_application/features/admin/providers/dashboard_notifier.dart';
 import 'package:libratrack_application/features/admin/widgets/dashboard_stat_card.dart';
+import 'package:libratrack_application/features/admin/widgets/notification_bell.dart';
 import 'package:libratrack_application/features/admin/widgets/recent_activity.dart';
-import 'package:provider/provider.dart';
 
-class AdminDashboardScreen extends StatefulWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DashboardProvider>().loadDashboard();
+    Future.microtask(() {
+      ref.read(dashboardProvider.notifier).loadDashboard();
     });
 
     _timer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (mounted) context.read<DashboardProvider>().loadDashboard();
+      if (mounted) ref.read(dashboardProvider.notifier).loadDashboard();
     });
   }
 
@@ -35,11 +37,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _refresh() async {
-    await context.read<DashboardProvider>().loadDashboard();
+    await ref.read(dashboardProvider.notifier).loadDashboard();
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(dashboardProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgcolor,
       body: SafeArea(
@@ -50,37 +54,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.menu_rounded,
-                    color: Color(0xFF1A1A2E),
+                    color: AppColors.textPrimary,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
-                  const Text(
+                  Text(
                     "Dashboard",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A2E),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const Spacer(),
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.grey[600],
-                    size: 24,
-                  ),
+                  const NotificationBell(),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Colors.grey),
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
-              child: Consumer<DashboardProvider>(
-                builder: (context, provider, _) {
-                  if (provider.isLoading && provider.dashboard == null) {
+              child: Builder(
+                builder: (context) {
+                  if (state.isLoading && state.dashboard == null) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (provider.error != null && provider.dashboard == null) {
+                  if (state.error != null && state.dashboard == null) {
                     return RefreshIndicator(
                       onRefresh: _refresh,
                       child: ListView(
@@ -88,22 +88,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           SizedBox(
                             height: MediaQuery.of(context).size.height * 0.6,
-                            child: Center(child: Text(provider.error!)),
+                            child: Center(child: Text(state.error!)),
                           ),
                         ],
                       ),
                     );
                   }
-                  final d = provider.dashboard;
+                  final d = state.dashboard;
                   if (d == null) {
                     return RefreshIndicator(
                       onRefresh: _refresh,
                       child: ListView(physics: AlwaysScrollableScrollPhysics()),
                     );
                   }
+
                   final availabilityPercent = d.totalBooks > 0
                       ? ((d.availableBooks / d.totalBooks) * 100).round()
                       : 0;
+
                   return RefreshIndicator(
                     onRefresh: _refresh,
                     child: SingleChildScrollView(
@@ -113,7 +115,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           DashboardStatCard(
                             icon: Icons.menu_book_rounded,
-                            iconBgColor: const Color(0xFFEEF0FF),
+                            iconBgColor: const Color(
+                              0xFF5B5FC7,
+                            ).withValues(alpha: 0.15),
                             iconColor: const Color(0xFF5B5FC7),
                             leftBorderColor: const Color(0xFF5B5FC7),
                             label: 'TOTAL BOOKS',
@@ -124,7 +128,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           const SizedBox(height: 12),
                           DashboardStatCard(
                             icon: Icons.check_circle_outline_rounded,
-                            iconBgColor: const Color(0xFFE8F8F0),
+                            iconBgColor: AppColors.green.withValues(
+                              alpha: 0.15,
+                            ),
                             iconColor: AppColors.green,
                             leftBorderColor: AppColors.green,
                             label: 'AVAILABLE BOOKS',
@@ -135,7 +141,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           const SizedBox(height: 12),
                           DashboardStatCard(
                             icon: Icons.library_books_rounded,
-                            iconBgColor: const Color(0xFFEEF4FF),
+                            iconBgColor: Colors.blue.withValues(alpha: 0.15),
                             iconColor: Colors.blue,
                             leftBorderColor: Colors.blue,
                             label: 'ACTIVE BORROWS',
@@ -146,16 +152,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           const SizedBox(height: 12),
                           DashboardStatCard(
                             icon: Icons.pending_outlined,
-                            iconBgColor: const Color(0xFFFFF0F0),
-                            iconColor: Colors.red,
-                            leftBorderColor: Colors.red,
+                            iconBgColor: AppColors.red.withValues(alpha: 0.15),
+                            iconColor: AppColors.red,
+                            leftBorderColor: AppColors.red,
                             label: 'PENDING REQUESTS',
                             value: '${d.pendingRequests}',
                             badgeText: 'Pending',
-                            badgeColor: Colors.red,
+                            badgeColor: AppColors.red,
                           ),
                           const SizedBox(height: 24),
-                          RecentActivity(activities: provider.activities),
+                          RecentActivity(activities: state.activities),
                         ],
                       ),
                     ),

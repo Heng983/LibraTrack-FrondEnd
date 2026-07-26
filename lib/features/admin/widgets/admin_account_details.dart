@@ -20,11 +20,11 @@ class AdminAccountDetails extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: Offset(0, 2),
           ),
@@ -94,7 +94,7 @@ class _DetailItem extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: Colors.grey[500],
+            color: AppColors.textMuted,
             letterSpacing: 0.8,
           ),
         ),
@@ -102,13 +102,13 @@ class _DetailItem extends StatelessWidget {
         isAccess
             ? Row(
                 children: [
-                  const Icon(Icons.circle, size: 8, color: Colors.green),
+                  Icon(Icons.circle, size: 8, color: AppColors.green),
                   const SizedBox(width: 6),
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF1A1A2E),
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -116,9 +116,9 @@ class _DetailItem extends StatelessWidget {
               )
             : Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF1A1A2E),
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
               ),

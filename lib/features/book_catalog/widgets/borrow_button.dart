@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
 import 'package:libratrack_application/features/book_catalog/models/book_model.dart';
-import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_notifier.dart';
 
-class BorrowButton extends StatelessWidget {
+class BorrowButton extends ConsumerWidget {
   final BookModel book;
 
   const BorrowButton({super.key, required this.book});
 
   @override
-  Widget build(BuildContext context) {
-    final cart = context.watch<BorrowCartProvider>();
-    final inCart = cart.contains(book);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(borrowCartProvider);
+    final inCart = cart.cartItems.any((b) => b.id == book.id);
 
     return Container(
-      color: Colors.white,
+      color: AppColors.card,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: ElevatedButton.icon(
         onPressed: book.available && !inCart
             ? () {
-                cart.addItem(book);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Added to borrow cart!'),
-                    duration: Duration(seconds: 1),
-                  ),
+                ref.read(borrowCartProvider.notifier).addItem(book);
+                GlassSnackBar.show(
+                  context,
+                  'Added to borrow cart!',
+                  type: GlassSnackBarType.success,
+                  duration: const Duration(seconds: 1),
                 );
               }
             : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: inCart ? Colors.green : AppColors.navy,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: Colors.grey[300],
+          backgroundColor: inCart ? AppColors.green : AppColors.navy,
+          foregroundColor: AppColors.onPrimary,
+          disabledBackgroundColor: AppColors.borderColor,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

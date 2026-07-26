@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/widgets/requests/info_row.dart';
 
 class StudentInfoCard extends StatelessWidget {
@@ -21,7 +22,7 @@ class StudentInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF4FF),
+        color: AppColors.navy.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -32,7 +33,7 @@ class StudentInfoCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
+              color: AppColors.textMuted,
               letterSpacing: 0.8,
             ),
           ),

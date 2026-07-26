@@ -33,12 +33,12 @@ class BookCard extends StatelessWidget {
                     height: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: const Color(0xFFEAEDF5),
+                      color: AppColors.fieldBg,
                       width: double.infinity,
-                      child: const Icon(
+                      child: Icon(
                         Icons.book_rounded,
                         size: 40,
-                        color: Colors.grey,
+                        color: AppColors.textMuted,
                       ),
                     ),
                   ),
@@ -52,17 +52,18 @@ class BookCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: available
-                          ? const Color(0xFF86F2E4)
-                          : const Color(0xFFFFDAD6),
+                      color: Color.alphaBlend(
+                        available
+                            ? AppColors.teal.withValues(alpha: 0.15)
+                            : AppColors.red.withValues(alpha: 0.15),
+                        AppColors.card,
+                      ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       available ? "Available" : "Borrowed",
                       style: TextStyle(
-                        color: available
-                            ? Color(0xFF006F66)
-                            : Color(0xFF93000A),
+                        color: available ? AppColors.teal : AppColors.red,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -91,7 +92,7 @@ class BookCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w400,
-              color: Colors.black54,
+              color: AppColors.textMuted,
             ),
           ),
         ],

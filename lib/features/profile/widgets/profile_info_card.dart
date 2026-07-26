@@ -22,7 +22,7 @@ class ProfileInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListView.separated(
@@ -30,7 +30,7 @@ class ProfileInfoCard extends StatelessWidget {
         physics: NeverScrollableScrollPhysics(),
         itemCount: items.length,
         separatorBuilder: (_, __) =>
-            Divider(height: 1, color: Color(0xFFEEEEEE), indent: 70),
+            Divider(height: 1, color: AppColors.divider, indent: 70),
         itemBuilder: (_, index) => _InfoRow(item: items[index]),
       ),
     );
@@ -52,7 +52,7 @@ class _InfoRow extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: Color(0xFFEEF1FB),
+              color: AppColors.fieldBg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(item.icon, color: AppColors.navy, size: 20),
@@ -66,7 +66,7 @@ class _InfoRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[500],
+                  color: AppColors.textMuted,
                   letterSpacing: 0.8,
                 ),
               ),

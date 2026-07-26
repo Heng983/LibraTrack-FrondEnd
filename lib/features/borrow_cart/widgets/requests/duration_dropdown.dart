@@ -18,14 +18,15 @@ class DurationDropdown extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Color(0xFFDDDDDD)),
+        border: Border.all(color: AppColors.borderColor),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedDuration,
           isExpanded: true,
+          dropdownColor: AppColors.card,
           icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.black),
           style: TextStyle(
             fontSize: 14,

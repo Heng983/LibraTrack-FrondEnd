@@ -34,18 +34,18 @@ class ProfileAvatarSection extends StatelessWidget {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Color(0xFFDDE3F5), width: 3),
+              border: Border.all(color: AppColors.borderColor, width: 3),
             ),
             child: ClipOval(
               child: Image.network(
                 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=600',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  color: Color(0xFFEAEDF5),
+                  color: AppColors.fieldBg,
                   child: Icon(
                     Icons.person_rounded,
                     size: 48,
-                    color: Colors.grey,
+                    color: AppColors.textMuted,
                   ),
                 ),
               ),
@@ -62,12 +62,12 @@ class ProfileAvatarSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.navy,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: AppColors.onPrimary, width: 2),
                 ),
                 child: Icon(
                   Icons.camera_alt_rounded,
                   size: 15,
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                 ),
               ),
             ),
@@ -84,7 +84,7 @@ class ProfileAvatarSection extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             "Student ID: $studentId",
-            style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
+            style: TextStyle(fontSize: 13, color: AppColors.textMuted),
           ),
         ],
       ),

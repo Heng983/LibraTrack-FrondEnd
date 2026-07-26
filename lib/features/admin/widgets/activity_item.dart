@@ -37,16 +37,16 @@ class ActivityItem extends StatelessWidget {
               children: [
                 Text(
                   activity.message,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF333333),
+                    color: AppColors.textPrimary,
                     height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   activity.timeAgo,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -57,7 +57,7 @@ class ActivityItem extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: onApprove,
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_rounded,
                     color: AppColors.green,
                     size: 22,
@@ -66,7 +66,7 @@ class ActivityItem extends StatelessWidget {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: onReject,
-                  child: const Icon(
+                  child: Icon(
                     Icons.close_rounded,
                     color: AppColors.red,
                     size: 22,
@@ -78,10 +78,10 @@ class ActivityItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F8F0),
+                color: AppColors.green.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
+              child: Text(
                 'SUCCESS',
                 style: TextStyle(
                   fontSize: 10,
@@ -95,15 +95,15 @@ class ActivityItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F0),
+                color: AppColors.textMuted.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
+              child: Text(
                 'SYSTEM',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey,
+                  color: AppColors.textMuted,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -116,11 +116,11 @@ class ActivityItem extends StatelessWidget {
   Color get _iconBgColor {
     switch (activity.type) {
       case ActivityType.request:
-        return const Color(0xFFEEF0FF);
+        return const Color(0xFF5B5FC7).withValues(alpha: 0.15);
       case ActivityType.returned:
-        return const Color(0xFFE8F8F0);
+        return AppColors.green.withValues(alpha: 0.15);
       case ActivityType.system:
-        return const Color(0xFFF0F0F0);
+        return AppColors.textMuted.withValues(alpha: 0.15);
     }
   }
 
@@ -131,7 +131,7 @@ class ActivityItem extends StatelessWidget {
       case ActivityType.returned:
         return AppColors.green;
       case ActivityType.system:
-        return Colors.grey;
+        return AppColors.textMuted;
     }
   }
 

@@ -16,15 +16,12 @@ class SubmitButton extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Submit ──
         ElevatedButton(
           onPressed: onSubmit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.navy,
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(
-              52,
-            ), // ← use this instead of SizedBox
+            foregroundColor: AppColors.onPrimary,
+            minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -42,7 +39,7 @@ class SubmitButton extends StatelessWidget {
             'CANCEL REQUEST',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[800],
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
             ),

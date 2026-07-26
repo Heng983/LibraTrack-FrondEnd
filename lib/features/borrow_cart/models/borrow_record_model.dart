@@ -12,6 +12,7 @@ class BorrowRecordModel {
   final DateTime? borrowedAt;
   final DateTime? dueDate;
   final DateTime? returnedAt;
+  final DateTime? createdAt;
   final BookModel? book;
 
   BorrowRecordModel({
@@ -24,6 +25,7 @@ class BorrowRecordModel {
     this.borrowedAt,
     this.dueDate,
     this.returnedAt,
+    this.createdAt,
     this.book,
   });
 
@@ -49,6 +51,9 @@ class BorrowRecordModel {
           : null,
       returnedAt: json['returned_at'] != null
           ? DateTime.tryParse(json['returned_at'].toString())
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
       book: json['book'] != null
           ? BookModel.fromJson(json['book'] as Map<String, dynamic>)

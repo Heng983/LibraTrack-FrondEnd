@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
+import 'package:libratrack_application/features/borrow_cart/screens/request_borrow_screen.dart';
+import 'package:libratrack_application/features/history/screens/returned_borrow_detail_screen.dart';
 
 class HistoryBookCard extends StatelessWidget {
   final BorrowRecordModel item;
@@ -12,7 +14,7 @@ class HistoryBookCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -61,7 +63,7 @@ class HistoryBookCard extends StatelessWidget {
                         item.book?.author ?? '',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Color(0xFF888888),
+                          color: AppColors.textMuted,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -71,16 +73,16 @@ class HistoryBookCard extends StatelessWidget {
                           Icon(
                             Icons.check_circle_rounded,
                             size: 18,
-                            color: Color(0xFF2ECC71),
+                            color: AppColors.green,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'RETURNED ON ${item.returnedAt?.toLocal().toString().split(' ')[0] ?? ''}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF2ECC71),
+                                color: AppColors.green,
                                 letterSpacing: 0.4,
                               ),
                             ),
@@ -92,7 +94,7 @@ class HistoryBookCard extends StatelessWidget {
                         'Borrowed: ${item.borrowedAt?.toLocal().toString().split(' ')[0] ?? ''}',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFFAAAAAA),
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -102,32 +104,59 @@ class HistoryBookCard extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
           Container(
-            color: Color(0xFFF5F6FA),
+            color: AppColors.fieldBg,
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(
-                  Icons.info_outline_rounded,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'DETAILS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey[800],
-                    letterSpacing: 0.6,
+                InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ReturnedBorrowDetailScreen(item: item),
+                    ),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DETAILS',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const Spacer(),
                 OutlinedButton(
-                  onPressed: () {},
+                  onPressed: item.book != null
+                      ? () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                RequestBorrowScreen(book: item.book!),
+                          ),
+                        )
+                      : null,
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.navy, width: 1.5),
+                    side: BorderSide(color: AppColors.navy, width: 1.5),
                     foregroundColor: AppColors.navy,
                     minimumSize: const Size(130, 40),
                     shape: RoundedRectangleBorder(
@@ -155,8 +184,8 @@ class HistoryBookCard extends StatelessWidget {
     return Container(
       width: 90,
       height: 120,
-      color: const Color(0xFFEAEDF5),
-      child: const Icon(Icons.book_rounded, color: Colors.grey, size: 32),
+      color: AppColors.fieldBg,
+      child: Icon(Icons.book_rounded, color: AppColors.textMuted, size: 32),
     );
   }
 }

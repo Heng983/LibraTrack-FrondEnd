@@ -1,36 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/auth/providers/auth_provider.dart';
+import 'package:libratrack_application/core/theme/theme_notifier.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/student_loginscreen.dart';
-import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_provider.dart';
+import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_notifier.dart';
 import 'package:libratrack_application/features/profile/widgets/edit_profile_button.dart';
 import 'package:libratrack_application/features/profile/widgets/logout_button.dart';
 import 'package:libratrack_application/features/profile/widgets/profile_avatar.dart';
 import 'package:libratrack_application/features/profile/widgets/profile_info_card.dart';
 import 'package:libratrack_application/features/profile/widgets/profile_stats.dart';
-import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().loadCurrentUser();
-      context.read<BorrowCartProvider>().fetchMyBorrows();
+      ref.read(authProvider.notifier).loadCurrentUser();
+      ref.read(borrowCartProvider.notifier).fetchMyBorrows();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final borrow = context.watch<BorrowCartProvider>();
+    final auth = ref.watch(authProvider);
+    final borrow = ref.watch(borrowCartProvider);
     final student = auth.student;
 
     return Scaffold(
@@ -41,9 +43,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.menu_rounded, color: AppColors.navy, size: 24),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Text(
                     'LibraTrack',
                     style: TextStyle(
@@ -55,7 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: Colors.grey),
+            Divider(height: 1, color: AppColors.divider),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 32),
@@ -67,14 +69,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       name: student?.name ?? '',
                       studentId: student?.studentId ?? '',
                       onTap: () async {
-                        final success = await context
-                            .read<AuthProvider>()
+                        final success = await ref
+                            .read(authProvider.notifier)
                             .uploadProfileImage();
                         if (success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profile image updated!'),
-                            ),
+                          GlassSnackBar.show(
+                            context,
+                            'Profile image updated!',
+                            type: GlassSnackBarType.success,
                           );
                         }
                       },
@@ -115,9 +117,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 20),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: AppColors.fieldBg,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.dark_mode_rounded,
+                                color: AppColors.navy,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                'Dark Mode',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                            ),
+                            Switch(
+                              value: ref.watch(themeProvider),
+                              activeThumbColor: AppColors.teal,
+                              onChanged: (_) => ref
+                                  .read(themeProvider.notifier)
+                                  .toggle(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
                       child: LogoutButton(
                         onTap: () async {
-                          await context.read<AuthProvider>().logout();
+                          await ref.read(authProvider.notifier).logout();
                           if (context.mounted) {
                             Navigator.pushAndRemoveUntil(
                               context,

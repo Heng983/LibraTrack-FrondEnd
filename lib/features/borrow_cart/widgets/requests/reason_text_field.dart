@@ -11,25 +11,25 @@ class ReasonTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       maxLines: 4,
-      style: TextStyle(fontSize: 13),
+      style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText:
             'Optional: Provide context for the librarian\n(e.g., research project)',
-        hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+        hintStyle: TextStyle(color: AppColors.hintGray, fontSize: 13),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.card,
         contentPadding: EdgeInsets.all(14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Color(0xFFDDDDDD)),
+          borderSide: BorderSide(color: AppColors.borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+          borderSide: BorderSide(color: AppColors.borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.navy, width: 1.5),
+          borderSide: BorderSide(color: AppColors.navy, width: 1.5),
         ),
       ),
     );

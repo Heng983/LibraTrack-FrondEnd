@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:libratrack_application/core/constants/api_constants.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
-import 'package:libratrack_application/features/book_catalog/providers/book_provider.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
+import 'package:libratrack_application/features/book_catalog/models/book_model.dart';
+import 'package:libratrack_application/features/book_catalog/providers/book_notifier.dart';
 import 'package:libratrack_application/features/book_catalog/widgets/book_card.dart';
-import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-class BookCatalogScreen extends StatefulWidget {
+class BookCatalogScreen extends ConsumerStatefulWidget {
   const BookCatalogScreen({super.key});
 
   @override
-  State<BookCatalogScreen> createState() => _BookCatalogScreenState();
+  ConsumerState<BookCatalogScreen> createState() => _BookCatalogScreenState();
 }
 
-class _BookCatalogScreenState extends State<BookCatalogScreen> {
+class _BookCatalogScreenState extends ConsumerState<BookCatalogScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   String _selectedCategory = 'All Genres';
@@ -25,6 +29,18 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
     'Novel',
   ];
 
+  // Placeholder books rendered under the skeleton shimmer while loading.
+  static final List<BookModel> _skeletonBooks = List.filled(
+    6,
+    const BookModel(
+      id: 0,
+      title: 'Book title placeholder',
+      author: 'Author name',
+      cover: '',
+      available: true,
+    ),
+  );
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -37,13 +53,22 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
     super.initState();
     _searchController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BookProvider>().fetchBooks();
+      ref.read(bookProvider.notifier).fetchBooks();
+      if (ref.read(authProvider).student == null) {
+        ref.read(authProvider.notifier).loadCurrentUser();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final bookProvider = context.watch<BookProvider>();
+    final bookState = ref.watch(bookProvider);
+    final profileImage = ref.watch(
+      authProvider.select((auth) => auth.student?.profileImage),
+    );
+    final profileImageUrl = profileImage != null
+        ? '${ApiConstants.baseUrl.replaceAll('/api', '')}$profileImage'
+        : null;
     return Scaffold(
       backgroundColor: AppColors.bgcolor,
       body: SafeArea(
@@ -54,16 +79,28 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 38,
-                    height: 38,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: AppColors.navy,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: Colors.white,
-                      size: 22,
+                    child: ClipOval(
+                      child: profileImageUrl != null
+                          ? Image.network(
+                              profileImageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.person_rounded,
+                                color: AppColors.onPrimary,
+                                size: 26,
+                              ),
+                            )
+                          : Icon(
+                              Icons.person_rounded,
+                              color: AppColors.onPrimary,
+                              size: 26,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -87,11 +124,9 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                 ],
               ),
             ),
-            const Divider(color: Colors.grey),
+            Divider(color: AppColors.divider),
             Expanded(
-              child: bookProvider.isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : bookProvider.error != null
+              child: bookState.error != null
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -99,17 +134,17 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                           Icon(
                             Icons.error_outline,
                             size: 48,
-                            color: Colors.grey[400],
+                            color: AppColors.textMuted,
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            bookProvider.error ?? 'Failed to load books',
-                            style: TextStyle(color: Colors.grey[500]),
+                            bookState.error ?? 'Failed to load books',
+                            style: TextStyle(color: AppColors.textMuted),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () =>
-                                context.read<BookProvider>().fetchBooks(),
+                                ref.read(bookProvider.notifier).fetchBooks(),
                             child: const Text('Retry'),
                           ),
                         ],
@@ -126,7 +161,7 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                           Container(
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.card,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: TextField(
@@ -135,33 +170,35 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                               style: TextStyle(fontSize: 14),
                               textInputAction: TextInputAction.search,
                               onSubmitted: (value) {
-                                context.read<BookProvider>().fetchBooks(
-                                  search: value,
-                                  category: _selectedCategory,
-                                );
+                                ref
+                                    .read(bookProvider.notifier)
+                                    .fetchBooks(
+                                      search: value,
+                                      category: _selectedCategory,
+                                    );
                               },
                               decoration: InputDecoration(
                                 hintText: 'Search by title, author, or ISBN',
                                 hintStyle: TextStyle(
-                                  color: Colors.grey[400],
+                                  color: AppColors.hintGray,
                                   fontSize: 14,
                                 ),
                                 prefixIcon: Icon(
                                   Icons.search_rounded,
-                                  color: Colors.grey[400],
+                                  color: AppColors.textMuted,
                                   size: 20,
                                 ),
                                 suffixIcon: _searchController.text.isNotEmpty
                                     ? IconButton(
                                         icon: Icon(
                                           Icons.close_rounded,
-                                          color: Colors.grey,
+                                          color: AppColors.textMuted,
                                           size: 20,
                                         ),
                                         onPressed: () {
                                           _searchController.clear();
-                                          context
-                                              .read<BookProvider>()
+                                          ref
+                                              .read(bookProvider.notifier)
                                               .fetchBooks(
                                                 category: _selectedCategory,
                                               );
@@ -170,21 +207,21 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                                     : null,
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.grey,
+                                    color: AppColors.borderColor,
                                     width: 1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.grey,
+                                    color: AppColors.borderColor,
                                     width: 1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                    color: Colors.grey,
+                                    color: AppColors.borderColor,
                                     width: 1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -218,10 +255,12 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                                 return GestureDetector(
                                   onTap: () {
                                     setState(() => _selectedCategory = cat);
-                                    context.read<BookProvider>().fetchBooks(
-                                      category: cat,
-                                      search: _searchController.text,
-                                    );
+                                    ref
+                                        .read(bookProvider.notifier)
+                                        .fetchBooks(
+                                          category: cat,
+                                          search: _searchController.text,
+                                        );
                                   },
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
@@ -231,7 +270,9 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? AppColors.navy
-                                          : Color(0xFFDCE9FF),
+                                          : AppColors.navy.withValues(
+                                              alpha: 0.12,
+                                            ),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -240,8 +281,8 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color: isSelected
-                                            ? Colors.white
-                                            : Colors.black87,
+                                            ? AppColors.onPrimary
+                                            : AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -275,35 +316,47 @@ class _BookCatalogScreenState extends State<BookCatalogScreen> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          bookProvider.books.isEmpty
+                          !bookState.isLoading && bookState.books.isEmpty
                               ? Center(
                                   child: Padding(
                                     padding: EdgeInsets.only(top: 40),
                                     child: Text(
                                       'No books found',
                                       style: TextStyle(
-                                        color: Colors.grey[400],
+                                        color: AppColors.textMuted,
                                         fontSize: 14,
                                       ),
                                     ),
                                   ),
                                 )
-                              : GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 16,
-                                        mainAxisSpacing: 20,
-                                        childAspectRatio: 0.65,
-                                      ),
-                                  itemCount: bookProvider.books.length,
-                                  itemBuilder: (context, index) {
-                                    return BookCard(
-                                      book: bookProvider.books[index],
-                                    );
-                                  },
+                              : Skeletonizer(
+                                  enabled: bookState.isLoading,
+                                  effect: ShimmerEffect(
+                                    baseColor: AppColors.fieldBg,
+                                    highlightColor: AppColors.borderColor,
+                                  ),
+                                  child: GridView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 16,
+                                          mainAxisSpacing: 20,
+                                          childAspectRatio: 0.65,
+                                        ),
+                                    itemCount: bookState.isLoading
+                                        ? _skeletonBooks.length
+                                        : bookState.books.length,
+                                    itemBuilder: (context, index) {
+                                      return BookCard(
+                                        book: bookState.isLoading
+                                            ? _skeletonBooks[index]
+                                            : bookState.books[index],
+                                      );
+                                    },
+                                  ),
                                 ),
                         ],
                       ),

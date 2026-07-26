@@ -47,7 +47,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        color: Color(0xFFEFF4FF),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -66,7 +66,7 @@ class _StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[500],
+              color: AppColors.textMuted,
               letterSpacing: 0.8,
             ),
           ),

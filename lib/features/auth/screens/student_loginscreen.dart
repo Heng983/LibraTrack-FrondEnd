@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/theme/app_color.dart';
+import 'package:libratrack_application/core/widgets/glass_snack_bar.dart';
+import 'package:libratrack_application/features/auth/providers/auth_notifier.dart';
 import 'package:libratrack_application/features/auth/screens/admin_loginscreen.dart';
 import 'package:libratrack_application/features/auth/screens/forgot_password_screen.dart';
 import 'package:libratrack_application/features/auth/screens/signup_screen.dart';
 import 'package:libratrack_application/features/auth/widgets/field_label.dart';
 import 'package:libratrack_application/features/auth/widgets/input_field.dart';
 import 'package:libratrack_application/features/navigation/main_screen.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 
-class StudentLoginScreen extends StatefulWidget {
+class StudentLoginScreen extends ConsumerStatefulWidget {
   const StudentLoginScreen({super.key});
 
   @override
-  State<StudentLoginScreen> createState() => _StudentLoginScreenState();
+  ConsumerState<StudentLoginScreen> createState() => _StudentLoginScreenState();
 }
 
-class _StudentLoginScreenState extends State<StudentLoginScreen> {
+class _StudentLoginScreenState extends ConsumerState<StudentLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -31,11 +32,14 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
   void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final success = await auth.studentLogin(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
+    final success = await ref
+        .read(authProvider.notifier)
+        .studentLogin(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+    if (!mounted) return;
 
     if (success) {
       Navigator.pushReplacement(
@@ -43,8 +47,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Login failed')),
+      final error = ref.read(authProvider).errorMessage;
+      GlassSnackBar.show(
+        context,
+        error ?? 'Login failed',
+        type: GlassSnackBarType.error,
       );
     }
   }
@@ -52,7 +59,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F8),
+      backgroundColor: AppColors.bgGray,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -80,14 +87,14 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                             color: AppColors.navy,
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.menu_book_rounded,
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                             size: 36,
                           ),
                         ),
                         const SizedBox(height: 14),
-                        const Text(
+                        Text(
                           'LibraTrack',
                           style: TextStyle(
                             fontSize: 26,
@@ -101,13 +108,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           'Student Login',
                           style: TextStyle(
                             fontSize: 13.5,
-                            color: Colors.grey[600],
+                            color: AppColors.textMuted,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
-
-                        // Email
                         const FieldLabel(label: 'Student Email'),
                         const SizedBox(height: 8),
                         InputField(
@@ -126,8 +131,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           },
                         ),
                         const SizedBox(height: 20),
-
-                        // Password
                         const FieldLabel(label: 'Password'),
                         const SizedBox(height: 8),
                         InputField(
@@ -146,8 +149,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           },
                         ),
                         const SizedBox(height: 10),
-
-                        // Forgot Password
                         Align(
                           alignment: Alignment.centerLeft,
                           child: GestureDetector(
@@ -157,7 +158,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                                 builder: (_) => const ForgotPasswordScreen(),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Forgot password?',
                               style: TextStyle(
                                 color: AppColors.teal,
@@ -168,8 +169,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-
-                        // Login Button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -177,7 +176,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                             onPressed: _handleLogin,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.navy,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -200,8 +199,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-
-                        // OR divider
                         Row(
                           children: [
                             Expanded(
@@ -226,8 +223,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Register Button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -239,7 +234,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
+                              side: BorderSide(
                                 color: AppColors.teal,
                                 width: 1.8,
                               ),
@@ -258,8 +253,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-
-                        // Admin Sign In
                         GestureDetector(
                           onTap: () => Navigator.push(
                             context,
@@ -272,14 +265,14 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                             children: [
                               Icon(
                                 Icons.admin_panel_settings,
-                                color: Colors.grey[500],
+                                color: AppColors.textMuted,
                                 size: 16,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 'Admin Sign In',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: AppColors.textMuted,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -292,12 +285,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Terms
                 RichText(
                   textAlign: TextAlign.center,
-                  text: const TextSpan(
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  text: TextSpan(
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                     children: [
                       TextSpan(text: 'By logging in, you agree to our '),
                       TextSpan(

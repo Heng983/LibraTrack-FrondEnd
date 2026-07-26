@@ -58,7 +58,7 @@ class _InputFieldState extends State<InputField> {
     // border color logic
     Color borderColor = AppColors.borderColor;
     if (_isDirty && _isValid) {
-      borderColor = Colors.green;
+      borderColor = AppColors.green;
     }
 
     return TextFormField(
@@ -67,12 +67,12 @@ class _InputFieldState extends State<InputField> {
       keyboardType: widget.keyboardType,
       validator: widget.validator,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: const TextStyle(color: AppColors.navy, fontSize: 14),
+      style: TextStyle(color: AppColors.navy, fontSize: 14),
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.fieldBg,
         hintText: widget.hint,
-        hintStyle: const TextStyle(color: AppColors.hintGray, fontSize: 14),
+        hintStyle: TextStyle(color: AppColors.hintGray, fontSize: 14),
         prefixIcon: Icon(widget.icon, color: AppColors.hintGray, size: 20),
         suffixIcon: widget.obscure
             ? IconButton(
@@ -91,34 +91,30 @@ class _InputFieldState extends State<InputField> {
           horizontal: 16,
         ),
 
-        // ── Normal border ──
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: borderColor),
         ),
 
-        // ── Focused border ──
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
-            color: _isValid ? Colors.green : AppColors.navy,
+            color: _isValid ? AppColors.green : AppColors.navy,
             width: 1.5,
           ),
         ),
 
-        // ── Error border ──
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: BorderSide(color: AppColors.red, width: 1.5),
         ),
 
-        // ── Focused error border ──
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: BorderSide(color: AppColors.red, width: 1.5),
         ),
 
-        errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+        errorStyle: TextStyle(color: AppColors.red, fontSize: 12),
       ),
     );
   }

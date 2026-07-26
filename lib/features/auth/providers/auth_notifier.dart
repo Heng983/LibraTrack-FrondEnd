@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:libratrack_application/core/constants/api_constants.dart';
@@ -8,26 +8,45 @@ import 'package:libratrack_application/core/services/api_service.dart';
 import 'package:libratrack_application/features/auth/models/admin_model.dart';
 import 'package:libratrack_application/features/auth/models/student_model.dart';
 
-class AuthProvider extends ChangeNotifier {
-  StudentModel? _student;
-  AdminModel? _admin;
-  bool _isLoading = false;
-  String? _errorMessage;
+class AuthState {
+  final StudentModel? student;
+  final AdminModel? admin;
+  final bool isLoading;
+  final String? errorMessage;
 
-  StudentModel? get student => _student;
-  AdminModel? get admin => _admin;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get isLoggedIn => _student != null || _admin != null;
+  const AuthState({
+    this.student,
+    this.admin,
+    this.isLoading = false,
+    this.errorMessage,
+  });
 
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+  bool get isLoggedIn => student != null || admin != null;
+
+  AuthState copyWith({
+    StudentModel? student,
+    AdminModel? admin,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+    bool clearStudent = false,
+    bool clearAdmin = false,
+  }) {
+    return AuthState(
+      student: clearStudent ? null : (student ?? this.student),
+      admin: clearAdmin ? null : (admin ?? this.admin),
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
   }
+}
+
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() => const AuthState();
 
   void clearError() {
-    _errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(clearError: true);
   }
 
   Future<bool> register({
@@ -37,7 +56,7 @@ class AuthProvider extends ChangeNotifier {
     required String department,
     required String password,
   }) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.post(ApiConstants.studentRegister, {
         'name': name,
@@ -50,18 +69,20 @@ class AuthProvider extends ChangeNotifier {
       if (response['token'] != null) {
         await ApiService.saveToken(response['token']);
         await ApiService.saveRole('student');
-        notifyListeners();
+        state = state.copyWith(isLoading: false);
         return true;
       }
-      _errorMessage = response['message'] ?? 'Registration failed';
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: response['message'] ?? 'Registration failed',
+        isLoading: false,
+      );
       return false;
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -69,7 +90,7 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.post(ApiConstants.studentLogin, {
         'email': email,
@@ -78,20 +99,23 @@ class AuthProvider extends ChangeNotifier {
       if (response['token'] != null) {
         await ApiService.saveToken(response['token']);
         await ApiService.saveRole('student');
-        _student = StudentModel.fromJson(response['student']);
-        notifyListeners();
+        state = state.copyWith(
+          student: StudentModel.fromJson(response['student']),
+          isLoading: false,
+        );
         return true;
       }
-
-      _errorMessage = response['message'] ?? "Login failed";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: response['message'] ?? 'Login failed',
+        isLoading: false,
+      );
       return false;
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -99,87 +123,95 @@ class AuthProvider extends ChangeNotifier {
     required String adminId,
     required String password,
   }) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.post(ApiConstants.adminLogin, {
         'admin_id': adminId,
         'password': password,
       });
-
       if (response['token'] != null) {
         await ApiService.saveToken(response['token']);
         await ApiService.saveRole('admin');
-        _admin = AdminModel.fromJson(response['admin']);
-        notifyListeners();
+        state = state.copyWith(
+          admin: AdminModel.fromJson(response['admin']),
+          isLoading: false,
+        );
         return true;
       }
-
-      _errorMessage = response['message'] ?? "Login failed";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: response['message'] ?? 'Login failed',
+        isLoading: false,
+      );
       return false;
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
   Future<bool> forgotPassword(String email) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.post(ApiConstants.forgotPassword, {
-        "email": email,
+        'email': email,
       });
-      _errorMessage = response["message"];
-      notifyListeners();
-      return response["message"] == "OTP sent to your email";
+      state = state.copyWith(
+        errorMessage: response['message'],
+        isLoading: false,
+      );
+      return response['message'] == 'OTP sent to your email';
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
   Future<bool> verifyOtp(String email, String otp) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.post(ApiConstants.verifyOtp, {
-        "email": email,
-        "otp": otp,
+        'email': email,
+        'otp': otp,
       });
-      _errorMessage = response["message"];
-      notifyListeners();
-      return response["message"] == "OTP verified successfully";
+      state = state.copyWith(
+        errorMessage: response['message'],
+        isLoading: false,
+      );
+      return response['message'] == 'OTP verified successfully';
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
   Future<bool> resetPassword(String email, String password) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await ApiService.put(ApiConstants.resetPassword, {
-        "email": email,
-        "password": password,
-        "password_confirmation": password,
+        'email': email,
+        'password': password,
+        'password_confirmation': password,
       });
-      _errorMessage = response["message"];
-      notifyListeners();
-      return response["message"] == "Password reset successfully";
+      state = state.copyWith(
+        errorMessage: response['message'],
+        isLoading: false,
+      );
+      return response['message'] == 'Password reset successfully';
     } catch (e) {
-      _errorMessage = "Something went wrong";
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -189,30 +221,21 @@ class AuthProvider extends ChangeNotifier {
       final role = await ApiService.getRole();
 
       if (role == 'student' && res['student'] != null) {
-        _student = StudentModel.fromJson(res['student']);
-        notifyListeners();
+        state = state.copyWith(student: StudentModel.fromJson(res['student']));
       } else if (role == 'admin' && res['student'] != null) {
-        _admin = AdminModel.fromJson(res['student']);
-        notifyListeners();
+        state = state.copyWith(admin: AdminModel.fromJson(res['student']));
       }
-    } catch (e) {
-      print('Failed to load current user: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> logout() async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true);
     try {
       await ApiService.deleteAuth(ApiConstants.logout);
       await ApiService.clearStorage();
-      _student = null;
-      _admin = null;
-      notifyListeners();
+      state = const AuthState();
     } catch (e) {
-      _errorMessage = "Logout failed";
-      notifyListeners();
-    } finally {
-      _setLoading(false);
+      state = state.copyWith(errorMessage: 'Logout failed', isLoading: false);
     }
   }
 
@@ -228,7 +251,7 @@ class AuthProvider extends ChangeNotifier {
 
       if (image == null) return false;
 
-      _setLoading(true);
+      state = state.copyWith(isLoading: true);
 
       final token = await ApiService.getToken();
       final request = http.MultipartRequest(
@@ -245,26 +268,30 @@ class AuthProvider extends ChangeNotifier {
       final json = jsonDecode(body);
 
       if (response.statusCode == 200 && json['profile_image'] != null) {
-        if (_student != null) {
-          _student = StudentModel(
-            id: _student!.id,
-            name: _student!.name,
-            studentId: _student!.studentId,
-            email: _student!.email,
-            department: _student!.department,
-            profileImage: json['profile_image'],
+        final s = state.student;
+        if (s != null) {
+          state = state.copyWith(
+            student: StudentModel(
+              id: s.id,
+              name: s.name,
+              studentId: s.studentId,
+              email: s.email,
+              department: s.department,
+              profileImage: json['profile_image'],
+            ),
+            isLoading: false,
           );
-          notifyListeners();
+        } else {
+          state = state.copyWith(isLoading: false);
         }
         return true;
       }
 
+      state = state.copyWith(isLoading: false);
       return false;
     } catch (e) {
-      print('Upload error: $e');
+      state = state.copyWith(isLoading: false);
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 
@@ -274,7 +301,7 @@ class AuthProvider extends ChangeNotifier {
     String? password,
     String? passwordConfirmation,
   }) async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final body = <String, dynamic>{};
       if (name != null && name.isNotEmpty) body['name'] = name;
@@ -291,20 +318,28 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (res['student'] != null) {
-        _student = StudentModel.fromJson(res['student']);
-        notifyListeners();
+        state = state.copyWith(
+          student: StudentModel.fromJson(res['student']),
+          isLoading: false,
+        );
         return true;
       }
 
-      _errorMessage = res['message'] ?? 'Failed to update profile';
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: res['message'] ?? 'Failed to update profile',
+        isLoading: false,
+      );
       return false;
     } catch (e) {
-      _errorMessage = 'Something went wrong';
-      notifyListeners();
+      state = state.copyWith(
+        errorMessage: 'Something went wrong',
+        isLoading: false,
+      );
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 }
+
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);

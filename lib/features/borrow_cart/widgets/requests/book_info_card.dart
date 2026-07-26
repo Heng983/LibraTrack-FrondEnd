@@ -13,9 +13,9 @@ class BookInfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
+        border: Border.all(color: AppColors.borderColor),
       ),
       child: Row(
         children: [
@@ -29,10 +29,10 @@ class BookInfoCard extends StatelessWidget {
               errorBuilder: (_, __, ___) => Container(
                 width: 100,
                 height: 125,
-                color: const Color(0xFFEAEDF5),
-                child: const Icon(
+                color: AppColors.fieldBg,
+                child: Icon(
                   Icons.book_rounded,
-                  color: Colors.grey,
+                  color: AppColors.textMuted,
                   size: 30,
                 ),
               ),
@@ -47,7 +47,7 @@ class BookInfoCard extends StatelessWidget {
                   book.category.toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.teal,
@@ -59,7 +59,7 @@ class BookInfoCard extends StatelessWidget {
                   book.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.black,
@@ -68,23 +68,23 @@ class BookInfoCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   book.author,
-                  style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                  style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                 ),
                 const SizedBox(height: 8),
                 if (book.available)
                   Row(
-                    children: const [
+                    children: [
                       Icon(
                         Icons.check_circle_rounded,
                         size: 12,
-                        color: Color(0xFF006A61),
+                        color: AppColors.teal,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'Available for borrow',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF006A61),
+                          color: AppColors.teal,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
