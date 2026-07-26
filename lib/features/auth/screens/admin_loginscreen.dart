@@ -116,7 +116,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           controller: _adminIdController,
                           hint: 'Enter your identification number',
                           icon: Icons.admin_panel_settings_outlined,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Admin ID is required';
