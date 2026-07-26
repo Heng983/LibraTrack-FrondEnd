@@ -130,13 +130,40 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF0F2F8),
-      body: Center(
-        child: Image(
-          image: AssetImage('assets/images/logo_splash.png'),
-          width: 240,
-        ),
+    // Pixel-matches the Android 12 native splash: the same icon asset at the
+    // same size (1152px spec = 288dp box) centered on screen, so the icon
+    // does not move when Flutter takes over — only the wordmark fades in
+    // below it. iOS never shows this screen (its native splash stays up
+    // until navigation).
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0F2F8),
+      body: Stack(
+        children: [
+          const Center(
+            child: Image(
+              image: AssetImage('assets/images/android12_splash.png'),
+              width: 288,
+              height: 288,
+            ),
+          ),
+          Center(
+            child: Transform.translate(
+              // Icon artwork ends 64dp below center (512px of the 1152px
+              // canvas); place the wordmark just under it.
+              offset: const Offset(0, 106),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 350),
+                builder: (_, opacity, child) =>
+                    Opacity(opacity: opacity, child: child),
+                child: const Image(
+                  image: AssetImage('assets/images/splash_wordmark.png'),
+                  width: 200,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
