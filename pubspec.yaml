@@ -100,10 +100,10 @@ flutter_native_splash:
   ios_content_mode: center
 
   # Android 12+ masks the splash image into a centered circle, so the image
-  # must be icon-only (1152x1152, content within a 768px circle). The
-  # "LibraTrack" wordmark is shown separately as the branding image.
+  # must be icon-only (1152x1152, content within a 768px circle). The full
+  # logo with the "LibraTrack" text is drawn by SplashDecider (lib/main.dart)
+  # as soon as Flutter's first frame renders.
   android_12:
     color: "#F0F2F8"
     image: assets/images/android12_splash.png
-    branding: assets/images/branding_splash.png
     fullscreen: false

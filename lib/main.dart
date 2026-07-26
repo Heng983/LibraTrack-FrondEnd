@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -60,11 +62,19 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
   }
 
   Future<void> _checkAuth() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FlutterNativeSplash.remove();
+      });
+    }
+
     final auth = ref.read(authProvider);
     if (auth.isLoggedIn) {
       await Future.delayed(Duration.zero);
-      FlutterNativeSplash.remove();
-      if (!mounted) return;
+      if (!mounted) {
+        FlutterNativeSplash.remove();
+        return;
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -73,6 +83,7 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
               : const MainScreen(),
         ),
       );
+      FlutterNativeSplash.remove();
       return;
     }
 
@@ -82,14 +93,19 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
     final role = await ApiService.getRole();
 
     if (token != null && token.isNotEmpty) {
-      if (!mounted) return;
+      if (!mounted) {
+        FlutterNativeSplash.remove();
+        return;
+      }
       await ref.read(authProvider.notifier).loadCurrentUser();
     }
 
-    FlutterNativeSplash.remove();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    if (!mounted) return;
+    if (!mounted) {
+      FlutterNativeSplash.remove();
+      return;
+    }
 
     if (token != null && token.isNotEmpty) {
       if (role == 'admin') {
@@ -109,13 +125,19 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
         MaterialPageRoute(builder: (_) => const StudentLoginScreen()),
       );
     }
+    FlutterNativeSplash.remove();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgGray,
-      body: const Center(child: CircularProgressIndicator()),
+    return const Scaffold(
+      backgroundColor: Color(0xFFF0F2F8),
+      body: Center(
+        child: Image(
+          image: AssetImage('assets/images/logo_splash.png'),
+          width: 240,
+        ),
+      ),
     );
   }
 }
