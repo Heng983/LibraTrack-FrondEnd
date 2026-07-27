@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:libratrack_application/core/constants/api_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:libratrack_application/core/services/api_service.dart';
 import 'package:libratrack_application/features/book_catalog/models/book_model.dart';
 import 'package:libratrack_application/features/borrow_cart/models/borrow_record_model.dart';
@@ -45,25 +48,61 @@ class BorrowCartState {
 }
 
 class BorrowCartNotifier extends Notifier<BorrowCartState> {
+  static const _cartPrefsKey = 'borrow_cart_items';
+
   @override
-  BorrowCartState build() => const BorrowCartState();
+  BorrowCartState build() {
+    Future.microtask(_restoreCart);
+    return const BorrowCartState();
+  }
+
+  Future<void> _restoreCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cartPrefsKey);
+      if (raw == null) return;
+
+      final saved = (jsonDecode(raw) as List)
+          .map((e) => BookModel.fromCache(e as Map<String, dynamic>))
+          .toList();
+      if (saved.isEmpty) return;
+
+      final current = state.cartItems;
+      final merged = [
+        ...saved,
+        ...current.where((c) => !saved.any((s) => s.id == c.id)),
+      ];
+      state = state.copyWith(cartItems: merged);
+    } catch (_) {}
+  }
+
+  Future<void> _saveCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _cartPrefsKey,
+      jsonEncode(state.cartItems.map((b) => b.toJson()).toList()),
+    );
+  }
 
   void addItem(BookModel book) {
     final exists = state.cartItems.any((b) => b.id == book.id);
     if (!exists) {
       state = state.copyWith(cartItems: [...state.cartItems, book]);
+      _saveCart();
     }
   }
 
   void removeItem(int index) {
     final updated = [...state.cartItems]..removeAt(index);
     state = state.copyWith(cartItems: updated);
+    _saveCart();
   }
 
   bool contains(BookModel book) => state.cartItems.any((b) => b.id == book.id);
 
   void clearCart() {
     state = state.copyWith(cartItems: []);
+    _saveCart();
   }
 
   void clearError() {

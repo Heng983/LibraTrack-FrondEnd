@@ -8,6 +8,7 @@ import 'package:libratrack_application/features/admin/screens/admin_dashboard_sc
 import 'package:libratrack_application/features/admin/screens/admin_profile_screen.dart';
 import 'package:libratrack_application/features/admin/screens/borrow_request_screen.dart';
 import 'package:libratrack_application/features/navigation/providers/nav_index_provider.dart';
+import 'package:libratrack_application/features/navigation/widgets/badged_icon.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class AdminNavigationBar extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _AdminNavigationBarState extends ConsumerState<AdminNavigationBar> {
             selectedColor: AppColors.teal,
           ),
           SalomonBottomBarItem(
-            icon: _BadgedIcon(
+            icon: BadgedIcon(
               icon: Icons.pending_actions_outlined,
               count: pendingCount,
             ),
@@ -82,47 +83,6 @@ class _AdminNavigationBarState extends ConsumerState<AdminNavigationBar> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BadgedIcon extends StatelessWidget {
-  final IconData icon;
-  final int count;
-
-  const _BadgedIcon({required this.icon, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Icon(icon),
-        if (count > 0)
-          Positioned(
-            top: -6,
-            right: -8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              constraints: const BoxConstraints(minWidth: 18),
-              decoration: BoxDecoration(
-                color: AppColors.red,
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(color: AppColors.card, width: 1.5),
-              ),
-              child: Text(
-                count > 99 ? '99+' : '$count',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 10,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

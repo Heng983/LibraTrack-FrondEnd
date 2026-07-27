@@ -167,7 +167,10 @@ class _BookCatalogScreenState extends ConsumerState<BookCatalogScreen> {
                             child: TextField(
                               controller: _searchController,
                               focusNode: _searchFocusNode,
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
                               textInputAction: TextInputAction.search,
                               onSubmitted: (value) {
                                 ref

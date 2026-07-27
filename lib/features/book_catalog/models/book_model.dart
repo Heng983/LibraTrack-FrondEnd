@@ -33,6 +33,45 @@ class BookModel {
   final String published;
   final String language;
 
+  /// Serializes the book for local storage (e.g. the persisted borrow cart).
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'author': author,
+    'cover': cover,
+    'available': available,
+    'copies_left': copiesLeft,
+    'category': category,
+    'rating': rating,
+    'review_count': reviewCount,
+    'description': description,
+    'isbn': isbn,
+    'publisher': publisher,
+    'published': published,
+    'language': language,
+  };
+
+  /// Restores a book serialized with [toJson]. Unlike [fromJson], the cover
+  /// is already a full proxy URL and must not be wrapped again.
+  factory BookModel.fromCache(Map<String, dynamic> json) {
+    return BookModel(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      author: json['author'] as String? ?? '',
+      cover: json['cover'] as String? ?? '',
+      available: json['available'] as bool? ?? false,
+      copiesLeft: json['copies_left'] as int? ?? 0,
+      category: json['category'] as String? ?? 'General',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: json['review_count'] as int? ?? 0,
+      description: json['description'] as String? ?? '',
+      isbn: json['isbn'] as String? ?? '',
+      publisher: json['publisher'] as String? ?? '',
+      published: json['published'] as String? ?? '',
+      language: json['language'] as String? ?? 'English',
+    );
+  }
+
   factory BookModel.fromJson(Map<String, dynamic> json) {
     return BookModel(
       id: json['id'] as int,

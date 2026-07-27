@@ -7,6 +7,7 @@ import 'package:libratrack_application/core/constants/api_constants.dart';
 import 'package:libratrack_application/core/services/api_service.dart';
 import 'package:libratrack_application/features/auth/models/admin_model.dart';
 import 'package:libratrack_application/features/auth/models/student_model.dart';
+import 'package:libratrack_application/features/borrow_cart/providers/borrow_cart_notifier.dart';
 
 class AuthState {
   final StudentModel? student;
@@ -233,6 +234,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       await ApiService.deleteAuth(ApiConstants.logout);
       await ApiService.clearStorage();
+      ref.read(borrowCartProvider.notifier).clearCart();
       state = const AuthState();
     } catch (e) {
       state = state.copyWith(errorMessage: 'Logout failed', isLoading: false);
