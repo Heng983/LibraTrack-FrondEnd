@@ -29,6 +29,10 @@ class MyApp extends ConsumerWidget {
       key: ValueKey(isDark),
       debugShowCheckedModeBanner: false,
       title: 'LibraTrack',
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        child: child ?? const SizedBox.shrink(),
+      ),
       home: const SplashDecider(),
       routes: {
         '/admin': (context) => const AdminNavigationBar(),
@@ -122,10 +126,6 @@ class _SplashDeciderState extends ConsumerState<SplashDecider> {
 
   @override
   Widget build(BuildContext context) {
-    // Normally never visible: the native splash stays up until _checkAuth
-    // navigates away. Pixel-matches the Android 12 native splash (same icon
-    // asset, same 288dp box, centered) so that if a frame does slip through
-    // the hand-off is invisible.
     return const Scaffold(
       backgroundColor: Color(0xFFF0F2F8),
       body: Center(
